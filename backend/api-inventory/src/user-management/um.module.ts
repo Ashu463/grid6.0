@@ -6,4 +6,4 @@ import { UmController } from './um.controller';
   controllers: [UmController],
   providers: [UmService],
 })
-export class AppModule {}
+export class UmModule {}
