@@ -6,30 +6,28 @@ import { Product } from 'src/dto/pm.dto';
 export class PmController {
   constructor(private readonly pmService : PmService, ) {}
 
-  @Post('/auth/register')
-  getRegistered(){
-    
-  }
-  @Post()
-  create(@Body() createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Product {
+  
+  @Post('/')
+  async create(@Body() createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) {
     return this.pmService.create(createProductDto);
   }
-  findAll(): Product[] {
-    return this.pmService.findAll();
+  @Get('/')
+  async findAll() {
+    return this.pmService.findAllProducts();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Product {
+  async findOne(@Param('id') id: string) {
     return this.pmService.findOne(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>): Product {
+  async update(@Param('id') id: string, @Body() updateProductDto) {
     return this.pmService.update(id, updateProductDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): void {
+  async remove(@Param('id') id: string) {
     this.pmService.remove(id);
   }
 }

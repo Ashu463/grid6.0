@@ -13,9 +13,4 @@ export class AppController {
   register() : any{
     return this.appService.getlello()
   }
-  @Get('test-connection')
-  async testConnection() {
-    const result = await this.appService.testConnection();
-    return result;
-  }
 }
