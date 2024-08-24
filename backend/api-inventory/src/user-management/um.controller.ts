@@ -1,12 +1,13 @@
 import { Controller, Get, Post } from '@nestjs/common';
 import { UmService } from './um.service';
 
-@Controller()
+@Controller('user')
 export class UmController {
   constructor(private readonly umservice : UmService) {}
 
-  @Post('/auth/register')
-  getRegistered(){
-    
+  @Get('/getuser')
+  async getRegistered(){
+    console.log("##################")
+    return this.umservice.GetUsers();
   }
 }

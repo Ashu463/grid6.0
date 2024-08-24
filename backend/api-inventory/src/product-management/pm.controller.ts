@@ -28,6 +28,6 @@ export class PmController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    this.pmService.remove(id);
+    return this.pmService.remove(id);
   }
 }
