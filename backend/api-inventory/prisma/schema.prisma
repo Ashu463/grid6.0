@@ -27,3 +27,12 @@ model Product {
   price     Int
   imageUrl  String
 }
+model Order {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  items       String[]
+  userId      String
+  totalAmount Float
+  status      String
+}
