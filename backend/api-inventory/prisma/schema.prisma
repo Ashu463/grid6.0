@@ -27,3 +27,10 @@ model Product {
   price     Int
   imageUrl  String
 }
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
