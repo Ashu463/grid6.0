@@ -36,3 +36,20 @@ model Category {
   // Add other fields if necessary
 
 }
+
+model ShippingMethod {
+  id        String   @id @default(uuid())
+  name      String
+  cost      Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Shipping {
+  id            String   @id @default(uuid())
+  orderId       String
+  status        String
+  estimatedArrival DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
