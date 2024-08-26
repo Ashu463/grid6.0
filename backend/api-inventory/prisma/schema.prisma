@@ -38,22 +38,20 @@ model Category {
 
 }
 
-model Payment {
+model ShippingMethod {
+  id        String   @id @default(uuid())
+  name      String
+  cost      Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Shipping {
   id            String   @id @default(uuid())
   orderId       String
-  userId        String
-  amount        Float
-  paymentMethod String
   status        String
+  estimatedArrival DateTime
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
-model Refund {
-  id        String   @id @default(uuid())
-  paymentId String
-  amount    Float
-  status    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
