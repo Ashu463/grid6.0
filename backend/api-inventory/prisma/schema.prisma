@@ -28,30 +28,19 @@ model Product {
   imageUrl  String
 }
 
-model Category {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  // Add other fields if necessary
-
-}
-
-model ShippingMethod {
+model Cart {
   id        String   @id @default(uuid())
-  name      String
-  cost      Float
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  items     CartItem[]
 }
 
-model Shipping {
-  id            String   @id @default(uuid())
-  orderId       String
-  status        String
-  estimatedArrival DateTime
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int
+  cart      Cart     @relation(fields: [cartId], references: [id])
 }
 
