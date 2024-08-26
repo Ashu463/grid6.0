@@ -9,8 +9,5 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
-  @Post('/auth/register')
-  register() : any{
-    return this.appService.getlello()
-  }
+  
 }
