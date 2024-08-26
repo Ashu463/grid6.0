@@ -8,7 +8,7 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post()
-  async createPayment(@Body() createPaymentDto: CreatePaymentDto) {
+  async createPayment(@Body('data') createPaymentDto: CreatePaymentDto) {
     return this.paymentService.createPayment(createPaymentDto);
   }
 
@@ -18,7 +18,7 @@ export class PaymentController {
   }
 
   @Post('refund')
-  async processRefund(@Body() refundPaymentDto: RefundPaymentDto) {
+  async processRefund(@Body('data') refundPaymentDto: RefundPaymentDto) {
     return this.paymentService.processRefund(refundPaymentDto);
   }
 }
