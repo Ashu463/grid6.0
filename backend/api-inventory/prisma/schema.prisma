@@ -43,3 +43,4 @@ model CartItem {
   quantity  Int
   cart      Cart     @relation(fields: [cartId], references: [id])
 }
+
