@@ -8,7 +8,7 @@ export class PmController {
 
   
   @Post('/')
-  async create(@Body() createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) {
+  async create(@Body('data') createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) {
     return this.pmService.create(createProductDto);
   }
   @Get('/')
