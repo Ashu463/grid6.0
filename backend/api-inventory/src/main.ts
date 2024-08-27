@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   
+  console.log(process.env.DATABASE_URL);
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
@@ -18,5 +19,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
   await app.listen(9000);
   console.log("app is running at port 9000")
+
 }
 bootstrap();
