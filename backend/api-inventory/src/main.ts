@@ -17,7 +17,7 @@ async function bootstrap() {
 
   // Set up Swagger UI
   SwaggerModule.setup('api', app, document);
-  await app.listen(9000);
+  await app.listen(9000, '0.0.0.0');
   console.log("app is running at port 9000")
 
 }
