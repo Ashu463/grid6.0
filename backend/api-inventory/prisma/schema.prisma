@@ -27,6 +27,7 @@ model Product {
   price     Int
   imageUrl  String
 }
+
 model Category {
   id          String   @id @default(uuid())
   name        String
