@@ -28,14 +28,48 @@ model Product {
   imageUrl  String
 }
 
-model Category {
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int
+  cart      Cart     @relation(fields: [cartId], references: [id])
+}
+model Order {
   id          String   @id @default(uuid())
-  name        String
-  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  // Add other fields if necessary
+  items       String[]
+  userId      String
+  totalAmount Float
+  status      String
+}
 
+model ShippingMethod {
+  id        String   @id @default(uuid())
+  name      String
+  cost      Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Shipping {
+  id            String   @id @default(uuid())
+  orderId       String
+  userId        String
+  amount        Float
+  paymentMethod String
+  status        String
+  estimatedArrival DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Payment {
@@ -57,3 +91,4 @@ model Refund {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
