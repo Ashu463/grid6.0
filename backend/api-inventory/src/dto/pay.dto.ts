@@ -8,7 +8,7 @@ export class CreatePaymentDto {
   
   export class RefundPaymentDto {
     paymentId: string;
-    refundAmount: number; // Partial refunds may require an amount
+    amount: number; // Partial refunds may require an amount
   }
   
   export class PaymentIdDto {
