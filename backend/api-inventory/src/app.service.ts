@@ -3,8 +3,11 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class AppService {
   constructor(){}
-  getHello(): string {
-    return 'Hello World!';
+  getHello(name : string) {
+    return {
+      success : true, 
+      message : `hello ${name} I am controller`
+    }
 
   }
   getlello(): string {
