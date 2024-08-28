@@ -10,8 +10,5 @@ export class AppController {
     console.log("hi to the cloud from health route")
     return 'hello cloud'
   }
-  @Post('/auth/register')
-  register() : any{
-    return this.appService.getlello()
-  }
+  
 }

@@ -17,8 +17,6 @@ export class ShippingController {
     return this.shippingService.estimateShipping(estimateShippingDto);
   }
 
-  @Get(':orderId/shipping')
-  async getShippingStatus(@Param('orderId') orderId: string) {
-    return this.shippingService.getShippingStatus(orderId);
-  }
+
+  
 }

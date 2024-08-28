@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EstimateShippingDto } from 'src/dto/sm.dto';
 
@@ -7,17 +7,29 @@ export class ShippingService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getShippingMethods() {
-    // Logic to retrieve available shipping methods
-    const methods = await this.prismaService.shippingMethod.findMany();
-    return {
-      success: true,
-      message: 'Shipping methods retrieved successfully',
-      data: methods,
-    };
+    try {
+      const methods = await this.prismaService.shippingMethod.findMany();
+      return {
+        success: true,
+        message: 'Shipping methods retrieved successfully',
+        data: methods,
+      };
+    } catch (error) {
+      throw new BadRequestException({
+        success : false,
+        message : 'Failed to retrieve shipping methods.'
+      });
+    }
   }
 
   async estimateShipping(estimateShippingDto: EstimateShippingDto) {
-    // Logic to estimate shipping costs
+    if (!estimateShippingDto) {
+      throw new BadRequestException({
+        success : false,
+        message : 'Invalid shipping estimation data.'
+      });
+    }
+
     const estimatedCost = this.calculateShippingCost(estimateShippingDto);
 
     return {
@@ -28,24 +40,7 @@ export class ShippingService {
   }
 
   private calculateShippingCost(estimateShippingDto: EstimateShippingDto): number {
-    // Implement a mock calculation based on destination, weight, and dimensions
-    return estimateShippingDto.weight * 5 + 10; // Example logic
+    return estimateShippingDto.weight * 5 + 10;
   }
 
-  async getShippingStatus(orderId: string) {
-    // Logic to retrieve shipping status for an order
-    const shippingStatus = await this.prismaService.shipping.findUnique({
-      where: { id:orderId },
-    });
-
-    if (!shippingStatus) {
-      throw new NotFoundException('Shipping status not found for this order');
-    }
-
-    return {
-      success: true,
-      message: 'Shipping status retrieved successfully',
-      data: shippingStatus,
-    };
-  }
 }

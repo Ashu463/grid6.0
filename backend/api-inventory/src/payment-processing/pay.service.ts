@@ -8,7 +8,10 @@ export class PaymentService {
 
   async createPayment(createPaymentDto: CreatePaymentDto) {
     if (!createPaymentDto) {
-      throw new BadRequestException('Please provide valid payment data.');
+      throw new BadRequestException({
+        success: false ,
+        message : 'Please provide valid payment data.'
+      });
     }
 
     try {
@@ -26,13 +29,19 @@ export class PaymentService {
         data: payment,
       };
     } catch (error) {
-      throw new BadGatewayException('Failed to process payment. Please try again later.');
+      throw new BadGatewayException({
+        success : false,
+        message : 'Failed to process payment. Please try again later.'
+      });
     }
   }
 
   async getPaymentDetails(paymentId: string) {
     if (!paymentId) {
-      throw new BadRequestException('Please provide a valid payment ID.');
+      throw new BadRequestException({
+        success : false,
+        message : 'Please provide a valid payment ID.'
+      });
     }
 
     const payment = await this.prismaService.payment.findUnique({
@@ -40,7 +49,10 @@ export class PaymentService {
     });
 
     if (!payment) {
-      throw new NotFoundException('Payment not found.');
+      throw new NotFoundException({
+        success : false,
+        message : 'Payment not found.'
+      });
     }
 
     return {
@@ -52,7 +64,10 @@ export class PaymentService {
 
   async processRefund(refundPaymentDto: RefundPaymentDto) {
     if (!refundPaymentDto) {
-      throw new BadRequestException('Please provide valid refund data.');
+      throw new BadRequestException({
+        success : false,
+        message : 'Please provide valid refund data.'
+      });
     }
 
     const payment = await this.prismaService.payment.findUnique({
@@ -60,11 +75,17 @@ export class PaymentService {
     });
 
     if (!payment) {
-      throw new NotFoundException('Payment not found with the provided ID.');
+      throw new NotFoundException({
+        success : false,
+        message : 'Payment not found with the provided ID.'
+      });
     }
 
     if (refundPaymentDto.refundAmount > payment.amount) {
-      throw new BadRequestException('Refund amount exceeds the original payment amount.');
+      throw new BadRequestException({
+        success : false,
+        message : 'Refund amount exceeds the original payment amount.'
+      });
     }
 
     try {

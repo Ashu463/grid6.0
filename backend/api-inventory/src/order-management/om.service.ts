@@ -1,9 +1,11 @@
 // src/order/order.service.ts
 
-import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { CreateOrderDto, UpdateOrderStatusDto } from 'src/dto/om.dto';
+import { validateOrReject } from 'class-validator';
+import { error } from 'console';
 
 @Injectable()
 export class OrderService {
@@ -12,8 +14,22 @@ export class OrderService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async createOrder(createOrderDto: CreateOrderDto) {
+    // Validate input DTO
+    try {
+      await validateOrReject(createOrderDto);
+    } catch (errors) {
+      this.logger.log(error)
+      throw new BadRequestException({
+        sucees : false,
+        message : 'Invalid input data',
+      });
+    }
+
     if (!createOrderDto.items || createOrderDto.items.length === 0) {
-      throw new BadRequestException('Order must contain at least one item.');
+      throw new BadRequestException({
+        success : false, 
+        message : 'Order must contain at least one item'
+      })
     }
 
     const newOrder = {
@@ -21,7 +37,7 @@ export class OrderService {
       createdAt: new Date(),
       updatedAt: new Date(),
       ...createOrderDto,
-      status: 'PENDING',
+      status: 'Order Placed',
     };
 
     try {
@@ -33,15 +49,28 @@ export class OrderService {
       };
     } catch (error) {
       this.logger.error('Error creating order', error);
-      throw new BadRequestException('Could not create order.');
+      throw new InternalServerErrorException({
+        success : false, 
+        message : 'internal server error occured'
+      })
     }
   }
 
   async getOrderById(orderId: string) {
+    if (!orderId || typeof orderId !== 'string') {
+      throw new BadRequestException({
+        success : false,
+        message : 'Invalid order ID.'
+      });
+    }
+
     const order = await this.prismaService.order.findUnique({ where: { id: orderId } });
 
     if (!order) {
-      throw new NotFoundException(`Order with id ${orderId} not found.`);
+      throw new NotFoundException({
+        success : false,
+        message : `Order with id ${orderId} not found.`
+      });
     }
 
     return {
@@ -51,6 +80,15 @@ export class OrderService {
   }
 
   async getAllOrders(userId: string) {
+    console.log(userId, ' req aa gyi from controller')
+
+    if (!userId || typeof userId !== 'string') {
+      throw new BadRequestException({
+        success : false,
+        message : 'Invalid user ID.'
+      });
+    }
+
     const orders = await this.prismaService.order.findMany({ where: { userId } });
 
     return {
@@ -60,10 +98,31 @@ export class OrderService {
   }
 
   async updateOrderStatus(orderId: string, updateOrderStatusDto: UpdateOrderStatusDto) {
+    // Validate input DTO
+    try {
+      await validateOrReject(updateOrderStatusDto);
+    } catch (errors) {
+      this.logger.log(error)
+      throw new BadRequestException({
+        success : false,
+        message : 'Invalid status update data'
+      });
+    }
+
+    if (!orderId || typeof orderId !== 'string') {
+      throw new BadRequestException({
+        success : false,
+        message : 'Invalid order ID.'
+      });
+    }
+
     const order = await this.prismaService.order.findUnique({ where: { id: orderId } });
 
     if (!order) {
-      throw new NotFoundException(`Order with id ${orderId} not found.`);
+      throw new NotFoundException({
+        success : false,
+        message : `Order with id ${orderId} not found.`
+      });
     }
 
     const updatedOrder = await this.prismaService.order.update({
@@ -79,10 +138,20 @@ export class OrderService {
   }
 
   async deleteOrder(orderId: string) {
+    if (!orderId || typeof orderId !== 'string') {
+      throw new BadRequestException({
+        success : false,
+        message : 'Invalid order ID.'
+      });
+    }
+
     const order = await this.prismaService.order.findUnique({ where: { id: orderId } });
 
     if (!order) {
-      throw new NotFoundException(`Order with id ${orderId} not found.`);
+      throw new NotFoundException({
+        success : false,
+        message : `Order with id ${orderId} not found.`
+      });
     }
 
     await this.prismaService.order.delete({ where: { id: orderId } });

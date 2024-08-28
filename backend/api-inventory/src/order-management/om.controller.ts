@@ -19,7 +19,7 @@ export class OrderController {
     return this.orderService.getOrderById(orderId);
   }
 
-  @Get()
+  @Get('/user/:userId')
   async getAllOrders(@Param('userId') userId: string) {
     return this.orderService.getAllOrders(userId);
   }
@@ -37,3 +37,4 @@ export class OrderController {
     return this.orderService.deleteOrder(orderId);
   }
 }
+
