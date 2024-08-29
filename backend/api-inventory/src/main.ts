@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as fs from 'fs';
 
 async function bootstrap() {
   
@@ -17,6 +18,9 @@ async function bootstrap() {
 
   // Set up Swagger UI
   SwaggerModule.setup('api', app, document);
+  fs.writeFileSync('./grid-BE-service', JSON.stringify(document, null, 2), {
+    encoding: 'utf8',
+  });
   await app.listen(9000, '0.0.0.0');
   console.log("app is running at port 9000")
 
