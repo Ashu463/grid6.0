@@ -9,6 +9,8 @@ export class RegisterUserDto {
 
   @ApiProperty({ description: 'The password for the new user' })
   password: string;
+  @ApiProperty({ description: 'The secret key associated with the new user' })
+  secretKey : string
 }
 
 export class LoginUserDto {
@@ -17,6 +19,14 @@ export class LoginUserDto {
 
   @ApiProperty({ description: 'The password of the user' })
   password: string;
+  
+  @ApiProperty({ description: 'The secret key associated with the new user' })
+  secretKey : string;
+}
+
+export class headersDTO {
+  @ApiProperty({ description: 'The jwt token' })
+  token: string;
 }
 
 export class UpdateUserDto {

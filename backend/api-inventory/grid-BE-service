@@ -3,7 +3,7 @@
   "paths": {
     "/health": {
       "get": {
-        "operationId": "AppController_getHello",
+        "operationId": "AppController_getHealth",
         "parameters": [],
         "responses": {
           "200": {
@@ -181,7 +181,16 @@
       "post": {
         "operationId": "UserController_login",
         "summary": "Login a user",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "jwt-token",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "description": "Data for logging in a user",
@@ -858,12 +867,17 @@
           "password": {
             "type": "string",
             "description": "The password for the new user"
+          },
+          "secretKey": {
+            "type": "string",
+            "description": "The secret key associated with the new user"
           }
         },
         "required": [
           "username",
           "email",
-          "password"
+          "password",
+          "secretKey"
         ]
       },
       "LoginUserDto": {
@@ -876,11 +890,16 @@
           "password": {
             "type": "string",
             "description": "The password of the user"
+          },
+          "secretKey": {
+            "type": "string",
+            "description": "The secret key associated with the new user"
           }
         },
         "required": [
           "email",
-          "password"
+          "password",
+          "secretKey"
         ]
       },
       "UpdateUserDto": {
