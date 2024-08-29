@@ -1,35 +1,35 @@
-name: Continuous Integration
+name: CI
 
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     services:
-      db:
+      postgres:
         image: postgres:13
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: mydb
         ports:
           - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test_db
         options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -37,18 +37,13 @@ jobs:
         node-version: 18
 
     - name: Install dependencies
+      working-directory: backend/api-inventory
       run: npm install
 
     - name: Generate Prisma Client
+      working-directory: backend/api-inventory
       run: npx prisma generate
 
-    - name: Apply Prisma Migrations
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/mydb
-      run: npx prisma migrate deploy
-
-    - name: Run Tests
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/mydb
+    - name: Run tests
+      working-directory: backend/api-inventory
       run: npm run test
-
