@@ -2,15 +2,26 @@ import { Injectable, NotFoundException, BadRequestException, Logger, InternalSer
 import { PrismaService } from '../prisma/prisma.service';
 
 import * as bcrypt from 'bcrypt';
-import { headersDTO, LoginUserDto, RegisterUserDto, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
+import { LoginUserDto, RegisterUserDto, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Injectable()
 export class UserService {
   private readonly logger: Logger;
-  constructor(private readonly prismaService: PrismaService) { this.logger = new Logger() }
+  constructor(private readonly prismaService: PrismaService, private readonly jwtService : JwtService) { this.logger = new Logger() }
+
+  async validateOAuthLogin(profile: any): Promise<any> {
+    if(!profile){
+      return 'no user from google'
+    }
+    return {
+      message : 'user info from google',
+      user : profile.user
+    }
+  }
 
   async registerUser(registerUserDto: RegisterUserDto) {
     if (!registerUserDto) {
@@ -241,12 +252,6 @@ export class UserService {
         message : 'Internal server error occured'
       })
     }
-    
-    return {
-      success: true,
-      message: 'user deleted successfully'
-
-    }
   }
 
   private toUserResponseDto(user: any): UserResponseDto {
@@ -266,7 +271,7 @@ export class UserService {
     const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
     return token;
   }
-  async authenticateJWT(token, secretKey) {
+  private authenticateJWT(token, secretKey):any {
 
     if (token && secretKey) {
       jwt.verify(token, secretKey, (err, user) => {

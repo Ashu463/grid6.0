@@ -148,6 +148,20 @@
         ]
       }
     },
+    "/auth/google/callback": {
+      "get": {
+        "operationId": "UserController_googleAuthRedirect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/auth/register": {
       "post": {
         "operationId": "UserController_register",

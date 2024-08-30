@@ -1,12 +1,20 @@
-import { Controller, Post, Body, Get, Param, Put, Delete, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Delete, Headers, UseGuards, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { UserService } from './um.service';
 import { LoginUserDto, RegisterUserDto, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('auth')
 @Controller('auth')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  
+  @Get('/google/callback')
+  @UseGuards(AuthGuard('google'))
+  googleAuthRedirect(@Req() req){
+    return this.userService.validateOAuthLogin(req)
+  }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
