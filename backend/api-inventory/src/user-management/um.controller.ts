@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Get, Param, Put, Delete, Headers, UseGuards, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { UserService } from './um.service';
-import { LoginUserDto, RegisterUserDto, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
+import { LoginUserDto, RegisterUserDto, updatePasswordDTO, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('auth')
@@ -61,8 +61,19 @@ export class UserController {
     @Param('userId') userId: string,
     @Body('data') updateUserDto: UpdateUserDto
   ){
-    
     return this.userService.updateUser(userId, updateUserDto);
+  }
+  @Put('reset-password/:userId')
+  @ApiOperation({ summary: 'Update user password by user ID' })
+  @ApiParam({ name: 'userId', description: 'The ID of the user to update' })
+  @ApiBody({ type: UpdateUserDto, description: 'Updated user data' })
+  @ApiResponse({ status: 200, description: 'User details updated successfully.' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async updatePassword(
+    @Param('userId') userId: string,
+    @Body('data') data: updatePasswordDTO
+  ){
+    return this.userService.updatePassword(userId, data);
   }
 
   @Delete('users/:userId')

@@ -24,10 +24,6 @@ export class LoginUserDto {
   secretKey : string;
 }
 
-export class headersDTO {
-  @ApiProperty({ description: 'The jwt token' })
-  token: string;
-}
 
 export class UpdateUserDto {
   @ApiProperty({ description: 'The new username of the user', required: false })
@@ -38,6 +34,16 @@ export class UpdateUserDto {
 
   @ApiProperty({ description: 'The new password for the user', required: false })
   password?: string;
+}
+
+export class updatePasswordDTO{
+  username : string;
+
+  email : string;
+
+  oldPassword : string;
+
+  newPassword : string;
 }
 
 export class UserResponseDto {

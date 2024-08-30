@@ -346,6 +346,45 @@
         ]
       }
     },
+    "/auth/reset-password/{userId}": {
+      "put": {
+        "operationId": "UserController_updatePassword",
+        "summary": "Update user password by user ID",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the user to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Updated user data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User details updated successfully."
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/cart": {
       "post": {
         "operationId": "CartController_createCart",

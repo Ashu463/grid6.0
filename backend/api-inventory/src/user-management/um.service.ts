@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger, InternalSer
 import { PrismaService } from '../prisma/prisma.service';
 
 import * as bcrypt from 'bcrypt';
-import { LoginUserDto, RegisterUserDto, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
+import { LoginUserDto, RegisterUserDto, updatePasswordDTO, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { JwtService } from '@nestjs/jwt';
@@ -11,15 +11,15 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class UserService {
   private readonly logger: Logger;
-  constructor(private readonly prismaService: PrismaService, private readonly jwtService : JwtService) { this.logger = new Logger() }
+  constructor(private readonly prismaService: PrismaService, private readonly jwtService: JwtService) { this.logger = new Logger() }
 
   async validateOAuthLogin(profile: any): Promise<any> {
-    if(!profile){
+    if (!profile) {
       return 'no user from google'
     }
     return {
-      message : 'user info from google',
-      user : profile.user
+      message: 'user info from google',
+      user: profile.user
     }
   }
 
@@ -122,47 +122,47 @@ export class UserService {
   async logoutUser(loginUserDto: LoginUserDto) {
     // Invalidate user session logic here (e.g., remove token from DB)
     // This is a placeholder
-    if(!loginUserDto){
+    if (!loginUserDto) {
       throw new BadRequestException({
-        success : false,
-        message : 'pls send whole data along with the request'
+        success: false,
+        message: 'pls send whole data along with the request'
       })
     }
-    try{
+    try {
       const user = await this.prismaService.user.findUnique({
         where: { email: loginUserDto.email },
       });
-      if(!user){
+      if (!user) {
         throw new BadRequestException({
-          success : false,
-          message : 'user with this email not found'
+          success: false,
+          message: 'user with this email not found'
         })
       }
-      const res = await this.prismaService.user.delete({where : {email : user.email}})
-      if(!res){
+      const res = await this.prismaService.user.delete({ where: { email: user.email } })
+      if (!res) {
         throw new BadGatewayException({
-          success : false,
-          message : 'cannot logout pls try again!'
+          success: false,
+          message: 'cannot logout pls try again!'
         })
       }
       return ({
-        success : true, 
-        message : 'user logout successfully'
+        success: true,
+        message: 'user logout successfully'
       })
-    }catch(error){
+    } catch (error) {
       this.logger.log(error)
       throw new InternalServerErrorException({
-        success : false,
-        message : 'Internal server error occured'
+        success: false,
+        message: 'Internal server error occured'
       })
     }
   }
 
   async getUserById(userId: string) {
-    if(!userId){
+    if (!userId) {
       throw new BadGatewayException({
-        success : false,
-        message : 'pls send userId along with request'
+        success: false,
+        message: 'pls send userId along with request'
       })
     }
     const user = await this.prismaService.user.findUnique({
@@ -171,85 +171,141 @@ export class UserService {
 
     if (!user) {
       throw new NotFoundException({
-        success : false, 
-        message : 'User not found'
+        success: false,
+        message: 'User not found'
       });
     }
 
     return {
-      success : true,
-      message : 'user found successfully',
-      data : user
+      success: true,
+      message: 'user found successfully',
+      data: user
     }
   }
 
   async updateUser(userId: string, updateUserDto: UpdateUserDto) {
-    if(!userId || !updateUserDto){
+    if (!userId || !updateUserDto) {
       throw new BadGatewayException({
-        success : false,
-        message : 'pls send userId and updated data along with request'
+        success: false,
+        message: 'pls send userId and updated data along with request'
       })
     }
-    try{
-      const user = await this.prismaService.user.findUnique({where : {id : userId}})
-      if(!user){
+    try {
+      const user = await this.prismaService.user.findUnique({ where: { id: userId } })
+      if (!user) {
         throw new BadGatewayException({
-          success : false,
-          message : 'user with this id not found'
+          success: false,
+          message: 'user with this id not found'
         })
       }
       const res = await this.prismaService.user.update({
         where: { id: userId },
         data: updateUserDto,
       });
-      if(!res){
+      if (!res) {
         throw new BadGatewayException({
-          success : false,
-          message : 'user cannot be updated'
+          success: false,
+          message: 'user cannot be updated'
         })
       }
-  
+
       return {
-        success : true, 
-        message : 'user updated successfully',
-        data : res
+        success: true,
+        message: 'user updated successfully',
+        data: res
       }
-    }catch(error){
+    } catch (error) {
       this.logger.log(error)
       throw new InternalServerErrorException({
-        success : false,
-        message : 'Internal server error occured'
+        success: false,
+        message: 'Internal server error occured'
       })
     }
-    
+
+  }
+  async updatePassword(userId: string, data: updatePasswordDTO) {
+    if (!userId || !data) {
+      throw new BadGatewayException({
+        success: false,
+        message: 'pls send userId and updated data along with request'
+      })
+    }
+    try {
+      const user = await this.prismaService.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (!user || !(await bcrypt.compare(data.oldPassword, user.password))) {
+        throw new BadRequestException({
+          success: false,
+          message: 'Invalid credentials'
+        });
+      }
+      const updatedUser: UpdateUserDto = { password: data.newPassword, ...user }
+      try {
+        const res = await this.prismaService.user.update({
+          where: { id: userId },
+          data: {
+            username : user.username,
+            password : data.newPassword,
+            email : user.email,
+            secretKey : user.secretKey
+          },
+        });
+        if (!res) {
+          throw new BadGatewayException({
+            success: false,
+            message: 'user cannot be updated'
+          })
+        }
+        return {
+          success: true,
+          message: 'user updated successfully',
+          data: res
+        }
+      } catch (error) {
+        this.logger.log(error)
+        throw new InternalServerErrorException({
+          success: false,
+          message: 'Internal server error occured while updating password'
+        })
+      }
+    } catch (error) {
+      this.logger.log(error)
+      throw new BadGatewayException({
+        success: false,
+        message: 'Error occured while finding user with given credentials'
+      })
+    }
+
   }
 
   async deleteUser(userId: string) {
-    if(!userId ){
+    if (!userId) {
       throw new BadGatewayException({
-        success : false,
-        message : 'pls send userId along with request'
+        success: false,
+        message: 'pls send userId along with request'
       })
     }
-    try{
+    try {
       const res = await this.prismaService.user.delete({
         where: { id: userId },
       });
-      if(!res){
+      if (!res) {
         throw new BadGatewayException({
-          success : false,
-          message : 'user cannot be deleted'
+          success: false,
+          message: 'user cannot be deleted'
         })
       }
       return {
-        success : true, 
-        message : 'user deleted successfully'
+        success: true,
+        message: 'user deleted successfully'
       }
-    }catch(error){
+    } catch (error) {
       this.logger.log(error)
       throw new InternalServerErrorException({
-        success : false,
-        message : 'Internal server error occured'
+        success: false,
+        message: 'Internal server error occured'
       })
     }
   }
@@ -271,7 +327,7 @@ export class UserService {
     const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
     return token;
   }
-  private authenticateJWT(token, secretKey):any {
+  private authenticateJWT(token, secretKey): any {
 
     if (token && secretKey) {
       jwt.verify(token, secretKey, (err, user) => {

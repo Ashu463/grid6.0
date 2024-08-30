@@ -42,6 +42,7 @@ export class OrderService {
 
     try {
       const order = await this.prismaService.order.create({ data: newOrder });
+      
       return {
         success: true,
         message: 'Order created successfully',
