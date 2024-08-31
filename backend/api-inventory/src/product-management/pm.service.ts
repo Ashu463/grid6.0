@@ -21,9 +21,9 @@ export class PmService {
       updatedAt: new Date(),
       ...product,
     };
-    console.log("----------------------")
+    
     const res = await this.prismaService.product.create({ data: newProduct })
-    console.log("----------------------")
+    
     try {
       if (res) {
         return {
@@ -50,7 +50,6 @@ export class PmService {
         message: 'products not found'
       })
     }
-    console.log(products, "--------------------")
     return {
       success: true,
       message: 'all products returned successfully',

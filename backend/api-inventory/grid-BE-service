@@ -1,0 +1,1134 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "AppController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/products": {
+      "post": {
+        "operationId": "PmController_create",
+        "summary": "Create a new product",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Data for creating a new product, excluding id, createdAt, and updatedAt",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The product has been successfully created."
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      },
+      "get": {
+        "operationId": "PmController_findAll",
+        "summary": "Retrieve all products",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all products retrieved successfully."
+          },
+          "404": {
+            "description": "No products found"
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "PmController_findOne",
+        "summary": "Retrieve a single product by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the product to retrieve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product retrieved successfully."
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      },
+      "put": {
+        "operationId": "PmController_update",
+        "summary": "Update a product by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the product to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Updated product data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated successfully."
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      },
+      "delete": {
+        "operationId": "PmController_remove",
+        "summary": "Delete a product by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the product to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product deleted successfully."
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "operationId": "UserController_googleAuthRedirect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "UserController_register",
+        "summary": "Register a new user",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Data for registering a new user",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully."
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "UserController_login",
+        "summary": "Login a user",
+        "parameters": [
+          {
+            "name": "jwt-token",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Data for logging in a user",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User logged in successfully and token returned."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "UserController_logout",
+        "summary": "Logout a user",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "User ID for logging out",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User logged out successfully."
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/users/{userId}": {
+      "get": {
+        "operationId": "UserController_getUser",
+        "summary": "Get user details by user ID",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the user to retrieve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details retrieved successfully."
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      },
+      "put": {
+        "operationId": "UserController_updateUser",
+        "summary": "Update user details by user ID",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the user to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Updated user data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User details updated successfully."
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      },
+      "delete": {
+        "operationId": "UserController_deleteUser",
+        "summary": "Delete a user by user ID",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the user to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully."
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/reset-password/{userId}": {
+      "put": {
+        "operationId": "UserController_updatePassword",
+        "summary": "Update user password by user ID",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the user to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Updated user data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User details updated successfully."
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/cart": {
+      "post": {
+        "operationId": "CartController_createCart",
+        "summary": "Create a new cart",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Data for creating a new cart",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The cart has been successfully created."
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "tags": [
+          "cart"
+        ]
+      },
+      "get": {
+        "operationId": "CartController_getCart",
+        "summary": "Get the cart of a user",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "User ID",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The cart has been successfully retrieved."
+          },
+          "404": {
+            "description": "Cart not found"
+          }
+        },
+        "tags": [
+          "cart"
+        ]
+      },
+      "delete": {
+        "operationId": "CartController_clearCart",
+        "summary": "Clear the cart",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "User ID",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The cart has been successfully cleared."
+          },
+          "404": {
+            "description": "Cart not found"
+          }
+        },
+        "tags": [
+          "cart"
+        ]
+      }
+    },
+    "/cart/items": {
+      "post": {
+        "operationId": "CartController_addItemToCart",
+        "summary": "Add an item to the cart",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Data for adding an item to the cart",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddItemToCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The item has been successfully added to the cart."
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "tags": [
+          "cart"
+        ]
+      }
+    },
+    "/cart/items/{itemId}": {
+      "put": {
+        "operationId": "CartController_updateCartItem",
+        "summary": "Update an item in the cart",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the item to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Data for updating an item in the cart",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCartItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The item has been successfully updated."
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        },
+        "tags": [
+          "cart"
+        ]
+      },
+      "delete": {
+        "operationId": "CartController_removeItemFromCart",
+        "summary": "Remove an item from the cart",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the item to remove",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The item has been successfully removed."
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        },
+        "tags": [
+          "cart"
+        ]
+      }
+    },
+    "/orders": {
+      "post": {
+        "operationId": "OrderController_createOrder",
+        "summary": "Create a new order",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Data for creating a new order",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The order has been successfully created."
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/{orderId}": {
+      "get": {
+        "operationId": "OrderController_getOrder",
+        "summary": "Get order details by order ID",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the order to retrieve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order details have been successfully retrieved."
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        },
+        "tags": [
+          "orders"
+        ]
+      },
+      "put": {
+        "operationId": "OrderController_updateOrderStatus",
+        "summary": "Update the status of an order",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the order to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Data for updating the order status",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The order status has been successfully updated."
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        },
+        "tags": [
+          "orders"
+        ]
+      },
+      "delete": {
+        "operationId": "OrderController_deleteOrder",
+        "summary": "Delete an order by ID",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the order to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order has been successfully deleted."
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        },
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/user/{userId}": {
+      "get": {
+        "operationId": "OrderController_getAllOrders",
+        "summary": "Get all orders for a user",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the user whose orders are being retrieved",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user's orders have been successfully retrieved."
+          },
+          "404": {
+            "description": "No orders found for the user"
+          }
+        },
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/shipping/methods": {
+      "get": {
+        "operationId": "ShippingController_getShippingMethods",
+        "summary": "Get available shipping methods",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of available shipping methods retrieved successfully."
+          },
+          "404": {
+            "description": "No shipping methods found"
+          }
+        },
+        "tags": [
+          "shipping"
+        ]
+      }
+    },
+    "/shipping/estimate": {
+      "post": {
+        "operationId": "ShippingController_estimateShipping",
+        "summary": "Estimate shipping costs",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Data for estimating shipping costs",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstimateShippingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shipping cost estimated successfully."
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "tags": [
+          "shipping"
+        ]
+      }
+    },
+    "/payments": {
+      "post": {
+        "operationId": "PaymentController_createPayment",
+        "summary": "Create a new payment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Data for creating a new payment",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The payment has been successfully created."
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/{paymentId}": {
+      "get": {
+        "operationId": "PaymentController_getPaymentDetails",
+        "summary": "Get payment details by payment ID",
+        "parameters": [
+          {
+            "name": "paymentId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the payment to retrieve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The payment details have been successfully retrieved."
+          },
+          "404": {
+            "description": "Payment not found"
+          }
+        },
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/refund": {
+      "post": {
+        "operationId": "PaymentController_processRefund",
+        "summary": "Process a payment refund",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Data for processing a refund",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The refund has been successfully processed."
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "tags": [
+          "payments"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Your API Title",
+    "description": "API description",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the product"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the product"
+          },
+          "description": {
+            "type": "string",
+            "description": "A brief description of the product"
+          },
+          "price": {
+            "type": "number",
+            "description": "The price of the product",
+            "example": 99.99
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "The URL of the product image"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The date the product was created"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The date the product was last updated"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "price",
+          "imageUrl",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RegisterUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The username of the new user"
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address of the new user"
+          },
+          "password": {
+            "type": "string",
+            "description": "The password for the new user"
+          },
+          "secretKey": {
+            "type": "string",
+            "description": "The secret key associated with the new user"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "password",
+          "secretKey"
+        ]
+      },
+      "LoginUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "The email address of the user"
+          },
+          "password": {
+            "type": "string",
+            "description": "The password of the user"
+          },
+          "secretKey": {
+            "type": "string",
+            "description": "The secret key associated with the new user"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "secretKey"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The new username of the user"
+          },
+          "email": {
+            "type": "string",
+            "description": "The new email address of the user"
+          },
+          "password": {
+            "type": "string",
+            "description": "The new password for the user"
+          }
+        }
+      },
+      "CreateCartDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "The ID of the user creating the cart"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "AddItemToCartDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "The ID of the product to add to the cart"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "The quantity of the product to add",
+            "example": 1
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "UpdateCartItemDto": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "number",
+            "description": "The new quantity of the product in the cart",
+            "example": 2
+          }
+        },
+        "required": [
+          "quantity"
+        ]
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Array of item IDs in the order",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "userId": {
+            "type": "string",
+            "description": "The ID of the user placing the order"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount for the order",
+            "example": 100
+          }
+        },
+        "required": [
+          "items",
+          "userId",
+          "totalAmount"
+        ]
+      },
+      "UpdateOrderStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "The new status of the order",
+            "example": "Shipped"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "EstimateShippingDto": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "The destination address for the shipment"
+          },
+          "weight": {
+            "type": "number",
+            "description": "The weight of the package",
+            "example": 5.5
+          },
+          "dimensions": {
+            "type": "object",
+            "description": "The dimensions of the package (length, width, height)",
+            "example": {
+              "length": 10,
+              "width": 15,
+              "height": 5
+            }
+          }
+        },
+        "required": [
+          "destination",
+          "weight",
+          "dimensions"
+        ]
+      },
+      "CreatePaymentDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "description": "The ID of the order being paid for"
+          },
+          "amount": {
+            "type": "number",
+            "description": "The amount to be paid",
+            "example": 100
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "The method of payment",
+            "example": "Credit Card"
+          },
+          "userId": {
+            "type": "string",
+            "description": "The ID of the user making the payment"
+          }
+        },
+        "required": [
+          "orderId",
+          "amount",
+          "paymentMethod",
+          "userId"
+        ]
+      },
+      "RefundPaymentDto": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "description": "The ID of the payment to be refunded"
+          },
+          "refundAmount": {
+            "type": "number",
+            "description": "The amount to be refunded",
+            "example": 50
+          }
+        },
+        "required": [
+          "paymentId",
+          "refundAmount"
+        ]
+      }
+    }
+  }
+}

@@ -13,10 +13,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
+  id        String     @id @default(uuid())
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String   @unique
+  username  String
+  password  String
+  secretKey String
 }
 model Product {
   id        String   @id 
@@ -27,6 +30,7 @@ model Product {
   price     Int
   imageUrl  String
 }
+
 model Category {
   id          String      @id @default(uuid())
   name        String
@@ -34,3 +38,69 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int
+  cart      Cart     @relation(fields: [cartId], references: [id])
+}
+model Order {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  items       String[]
+  userId      String
+  totalAmount Float
+  status      String
+}
+
+model ShippingMethod {
+  id        String   @id @default(uuid())
+  name      String
+  cost      Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Shipping {
+  id            String   @id @default(uuid())
+  orderId       String
+  userId        String
+  amount        Float
+  paymentMethod String
+  status        String
+  estimatedArrival DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  orderId       String
+  userId        String
+  amount        Float
+  paymentMethod String
+  status        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Refund {
+  id        String   @id @default(uuid())
+  paymentId String
+  amount    Float
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
