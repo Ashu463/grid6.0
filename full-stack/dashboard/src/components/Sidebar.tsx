@@ -12,7 +12,7 @@ const Sidebar: React.FC = () => {
           <Link href="/" className="text-lg">Home</Link>
         </li>
         <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
-          <a href="https://www.example.com" target="_blank" rel="noopener noreferrer">Swagger</a>
+          <a href="https://app.swaggerhub.com/apis-docs/ashukasaudhan/api_security_shield/1.0#/" target="_blank" rel="noopener noreferrer">Swagger</a>
         </li>
         <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
           <a href="https://www.example.com" target="_blank" rel="noopener noreferrer">Documentation</a>
