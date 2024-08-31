@@ -3,13 +3,14 @@
 import { BadGatewayException, BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from 'src/dto/rm.dto';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @Injectable()
 export class ReviewService {
   private readonly logger: Logger
   constructor(private readonly prismaService: PrismaService) { this.logger = new Logger() }
 
-  async createReview(createReviewDto: CreateReviewDto) {
+  async createReview(createReviewDto: CreateReviewDto): Promise<UniversalResponseDTO> {
     if (!createReviewDto) {
       throw new BadRequestException({
         success: false,
@@ -61,7 +62,7 @@ export class ReviewService {
 
   }
 
-  async getReviewsByProduct(productId: string) {
+  async getReviewsByProduct(productId: string): Promise<UniversalResponseDTO> {
     if (!productId) {
       throw new BadRequestException({
         success: false,
@@ -106,7 +107,7 @@ export class ReviewService {
     }
   }
 
-  async deleteReview(reviewId: string) {
+  async deleteReview(reviewId: string): Promise<UniversalResponseDTO> {
     if (!reviewId) {
       throw new BadRequestException({
         success: false,

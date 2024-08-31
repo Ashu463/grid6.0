@@ -2,13 +2,14 @@ import { BadGatewayException, BadRequestException, Injectable, InternalServerErr
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto } from 'src/dto/cam.dto';
 import { randomUUID } from 'crypto';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @Injectable()
 export class CategoriesService {
   private readonly logger : Logger
   constructor(private prismaService: PrismaService) {this.logger = new Logger()}
 
-  async create( data: CreateCategoryDto) {
+  async create( data: CreateCategoryDto): Promise<UniversalResponseDTO> {
     if(!data){
       throw new BadRequestException({
         success : false, 
@@ -46,7 +47,7 @@ export class CategoriesService {
     }
   }
 
-  async findAll() {
+  async findAll(): Promise<UniversalResponseDTO> {
     try {
       const res = await this.prismaService.category.findMany()
       if(!res){
@@ -69,7 +70,7 @@ export class CategoriesService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<UniversalResponseDTO> {
     if(!id){
       throw new BadRequestException({
         success : false, 
@@ -98,7 +99,7 @@ export class CategoriesService {
     }
   }
 
-  async update(id: string, data: UpdateCategoryDto) {
+  async update(id: string, data: UpdateCategoryDto): Promise<UniversalResponseDTO> {
     if(!data || !id){
       throw new BadRequestException({
         success : false, 
@@ -127,7 +128,7 @@ export class CategoriesService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<UniversalResponseDTO>{
     if(!id){
       throw new BadRequestException({
         success : false, 
