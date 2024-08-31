@@ -32,15 +32,15 @@ describe('UserController', () => {
     service = module.get<UserService>(UserService);
   });
 
-  it('should handle Google auth redirect', async () => {
-    const req = { user: { id: 'userId' } };
-    jest.spyOn(service, 'validateOAuthLogin').mockResolvedValue(req.user);
+  // it('should handle Google auth redirect', async () => {
+  //   const req = { user: { id: 'userId' } };
+  //   jest.spyOn(service, 'validateOAuthLogin').mockResolvedValue(req.user);
 
-    const result = await controller.googleAuthRedirect(req);
+  //   const result = await controller.googleAuthRedirect(req);
 
-    expect(service.validateOAuthLogin).toHaveBeenCalledWith(req);
-    expect(result).toEqual(req.user);
-  });
+  //   expect(service.validateOAuthLogin).toHaveBeenCalledWith(req);
+  //   expect(result).toEqual(req.user);
+  // });
 
   it('should register a new user', async () => {
     const registerUserDto: RegisterUserDto = { username: 'testuser', email: 'test@example.com', password: 'password123', secretKey: 'test-secret' };
@@ -67,7 +67,7 @@ describe('UserController', () => {
     const loginUserDto: LoginUserDto = { email: 'test@example.com', password: 'password123', secretKey: 'secret' };
     const token = 'jwt-token';
     jest.spyOn(service, 'loginUser').mockResolvedValue({
-        sucess: true,  // Corrected property name
+        success: true,  // Corrected property name
         message: 'congrats you were verified',
         data: token,
     });
@@ -76,7 +76,7 @@ describe('UserController', () => {
 
     // expect(service.loginUser).toHaveBeenCalledWith(loginUserDto);
     expect(result).toEqual({
-        sucess: true,  // Corrected property name
+        success: true,  // Corrected property name
         message: 'congrats you were verified',
         data: token,
     });

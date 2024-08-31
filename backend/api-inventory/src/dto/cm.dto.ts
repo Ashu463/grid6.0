@@ -21,7 +21,10 @@ export class AddItemToCartDto {
   @ApiProperty({ description: 'The quantity of the product to add', example: 1 })
   quantity: number;
 
+  @ApiProperty({ description: 'The id of user', example: 1 })
   userId : string
+
+  @ApiProperty({ description: 'The id ', example: 1 })
   id : string
 }
 

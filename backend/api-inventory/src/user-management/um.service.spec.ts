@@ -45,10 +45,10 @@ describe('UserService', () => {
   it('should validate OAuth login', async () => {
     const profile = { user: { id: 'userId' } };
     const result = await service.validateOAuthLogin(profile);
-
     expect(result).toEqual({
+      success : true,
       message: 'user info from google',
-      user: profile.user
+      data : profile.user
     });
   });
 
@@ -86,7 +86,7 @@ describe('UserService', () => {
     const result = await service.loginUser(loginUserDto);
   
     expect(result).toEqual({
-      sucess: true,
+      success: true,
       message: 'congrats you were verified',
       data: token
     });

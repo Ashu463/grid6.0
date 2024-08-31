@@ -439,33 +439,6 @@
         "tags": [
           "Cart Management"
         ]
-      },
-      "delete": {
-        "operationId": "CartController_clearCart",
-        "summary": "Clear the cart",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "description": "User ID",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The cart has been successfully cleared."
-          },
-          "404": {
-            "description": "Cart not found"
-          }
-        },
-        "tags": [
-          "Cart Management"
-        ]
       }
     },
     "/cart/items": {
@@ -1212,11 +1185,23 @@
             "type": "number",
             "description": "The quantity of the product to add",
             "example": 1
+          },
+          "userId": {
+            "type": "string",
+            "description": "The id of user",
+            "example": 1
+          },
+          "id": {
+            "type": "string",
+            "description": "The id ",
+            "example": 1
           }
         },
         "required": [
           "productId",
-          "quantity"
+          "quantity",
+          "userId",
+          "id"
         ]
       },
       "UpdateCartItemDto": {
