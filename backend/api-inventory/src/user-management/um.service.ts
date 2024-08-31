@@ -112,7 +112,7 @@ export class UserService {
       }
     } catch (error) {
       this.logger.log(error)
-      throw new InternalServerErrorException({
+      throw new BadRequestException({
         success: false,
         message: 'internal server error occured'
       })
@@ -216,7 +216,7 @@ export class UserService {
       }
     } catch (error) {
       this.logger.log(error)
-      throw new InternalServerErrorException({
+      throw new BadGatewayException({
         success: false,
         message: 'Internal server error occured'
       })
