@@ -12,13 +12,10 @@ const Sidebar: React.FC = () => {
           <Link href="/" className="text-lg">Home</Link>
         </li>
         <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
-          <Link href="/services" className="text-lg">History</Link>
+          <a href="https://www.example.com" target="_blank" rel="noopener noreferrer">Swagger</a>
         </li>
         <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
-          <Link href="/docs" className="text-lg">Docs</Link>
-        </li>
-        <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
-          <Link href="/contact" className="text-lg">Contact</Link>
+          <a href="https://www.example.com" target="_blank" rel="noopener noreferrer">Documentation</a>
         </li>
       </ul>
     </div>
