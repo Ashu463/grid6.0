@@ -5,7 +5,7 @@ import { LoginUserDto, RegisterUserDto, updatePasswordDTO, UpdateUserDto, UserRe
 import { AuthGuard } from '@nestjs/passport';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
-@ApiTags('auth')
+@ApiTags('User Management')
 @Controller('auth')
 export class UserController {
   constructor(private readonly userService: UserService) {}

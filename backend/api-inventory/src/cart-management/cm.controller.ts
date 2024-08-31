@@ -4,7 +4,7 @@ import { AddItemToCartDto, CreateCartDto, getCartDTO, UpdateCartItemDto } from '
 import { CartService } from './cm.service';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
-@ApiTags('cart')
+@ApiTags('Cart Management')
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}

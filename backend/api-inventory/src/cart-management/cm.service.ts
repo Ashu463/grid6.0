@@ -49,7 +49,6 @@ export class CartService {
         message : 'User ID is required to retrieve the cart'
       });
     }
-
     const cart = await this.prismaService.cart.findUnique({
       where: {id : data.id, userId: data.userId },
     });

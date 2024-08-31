@@ -4,7 +4,7 @@ import { CategoriesService } from './cam.service';
 import { CreateCategoryDto, UpdateCategoryDto } from 'src/dto/cam.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
-@ApiTags('categories')
+@ApiTags('Categories Management')
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}

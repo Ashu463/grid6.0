@@ -6,7 +6,7 @@ import { ReviewService } from './rm.service';
 import { CreateReviewDto } from 'src/dto/rm.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
-@ApiTags('Reviews')
+@ApiTags('Reviews Management')
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}

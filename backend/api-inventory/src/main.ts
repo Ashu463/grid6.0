@@ -24,8 +24,8 @@ async function bootstrap() {
 
 
   const config = new DocumentBuilder()
-    .setTitle('Your API Title')
-    .setDescription('API description')
+    .setTitle('API Security Shield')
+    .setDescription('Test out the demo APIs from following listed endpoints')
     .setVersion('1.0')
     .addBearerAuth() // If you have authentication
     .build();
@@ -33,7 +33,7 @@ async function bootstrap() {
 
   // Set up Swagger UI
   SwaggerModule.setup('api', app, document);
-  fs.writeFileSync('./grid-BE-service', JSON.stringify(document, null, 2), {
+  fs.writeFileSync('./grid-BE-service.json', JSON.stringify(document, null, 2), {
     encoding: 'utf8',
   });
   await app.listen(9000, '0.0.0.0');

@@ -4,7 +4,7 @@ import { ShippingService } from './sm.service';
 import { EstimateShippingDto } from 'src/dto/sm.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
-@ApiTags('shipping')
+@ApiTags('Shipping Management')
 @Controller('shipping')
 export class ShippingController {
   constructor(private readonly shippingService: ShippingService) {}

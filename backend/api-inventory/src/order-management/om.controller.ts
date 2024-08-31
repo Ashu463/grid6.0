@@ -4,7 +4,7 @@ import { OrderService } from './om.service';
 import { CreateOrderDto, UpdateOrderStatusDto } from 'src/dto/om.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
-@ApiTags('orders')
+@ApiTags('Order Management')
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}

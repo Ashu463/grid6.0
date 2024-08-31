@@ -4,7 +4,7 @@ import { PmService } from './pm.service';
 import { Product } from 'src/dto/pm.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
-@ApiTags('products')
+@ApiTags('Products Management')
 @Controller('products')
 export class PmController {
   constructor(private readonly pmService: PmService) {}

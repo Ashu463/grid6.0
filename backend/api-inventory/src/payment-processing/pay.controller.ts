@@ -4,7 +4,7 @@ import { PaymentService } from './pay.service';
 import { CreatePaymentDto, RefundPaymentDto } from 'src/dto/pay.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
-@ApiTags('payments')
+@ApiTags('Pyaments Processing Management')
 @Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
