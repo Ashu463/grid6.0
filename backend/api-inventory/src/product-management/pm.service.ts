@@ -1,6 +1,7 @@
 import { BadGatewayException, BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { CreateProductDto, Product } from 'src/dto/pm.dto';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -8,7 +9,7 @@ export class PmService {
   private readonly logger: Logger;
   constructor(private readonly prismaService: PrismaService) { this.logger = new Logger() }
 
-  async create(product: CreateProductDto) {
+  async create(product: CreateProductDto) : Promise<UniversalResponseDTO> {
     if (!product) {
       throw new BadRequestException({
         success: false,
@@ -42,7 +43,7 @@ export class PmService {
     }
   }
 
-  async findAllProducts() {
+  async findAllProducts()  : Promise<UniversalResponseDTO>{
     const products = await this.prismaService.product.findMany()
     if (!products) {
       throw new BadRequestException({
@@ -58,7 +59,7 @@ export class PmService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string)  : Promise<UniversalResponseDTO>{
     if (!id) {
       throw new BadRequestException({
         success: false,
@@ -73,7 +74,7 @@ export class PmService {
     };
   }
 
-  async update(id: string, updateData: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>) {
+  async update(id: string, updateData: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>) : Promise<UniversalResponseDTO> {
     if (!id || !updateData) {
       throw new BadRequestException({
         success: false,
@@ -96,7 +97,7 @@ export class PmService {
     };
   }
 
-  async remove(id: string) {
+  async remove(id: string) : Promise<UniversalResponseDTO> {
     if (!id) {
       throw new BadRequestException({
         success: false,

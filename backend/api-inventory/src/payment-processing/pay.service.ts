@@ -1,12 +1,13 @@
 import { Injectable, BadRequestException, BadGatewayException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePaymentDto, RefundPaymentDto } from 'src/dto/pay.dto';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @Injectable()
 export class PaymentService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async createPayment(createPaymentDto: CreatePaymentDto) {
+  async createPayment(createPaymentDto: CreatePaymentDto) : Promise<UniversalResponseDTO> {
     if (!createPaymentDto) {
       throw new BadRequestException({
         success: false ,
@@ -36,7 +37,7 @@ export class PaymentService {
     }
   }
 
-  async getPaymentDetails(paymentId: string) {
+  async getPaymentDetails(paymentId: string) : Promise<UniversalResponseDTO> {
     if (!paymentId) {
       throw new BadRequestException({
         success : false,
@@ -62,7 +63,7 @@ export class PaymentService {
     };
   }
 
-  async processRefund(refundPaymentDto: RefundPaymentDto) {
+  async processRefund(refundPaymentDto: RefundPaymentDto) : Promise<UniversalResponseDTO> {
     if (!refundPaymentDto) {
       throw new BadRequestException({
         success : false,

@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EstimateShippingDto } from 'src/dto/sm.dto';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @Injectable()
 export class ShippingService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getShippingMethods() {
+  async getShippingMethods() : Promise<UniversalResponseDTO> {
     try {
       const methods = await this.prismaService.shippingMethod.findMany();
       return {
@@ -22,7 +23,7 @@ export class ShippingService {
     }
   }
 
-  async estimateShipping(estimateShippingDto: EstimateShippingDto) {
+  async estimateShipping(estimateShippingDto: EstimateShippingDto) : Promise<UniversalResponseDTO>{
     if (!estimateShippingDto) {
       throw new BadRequestException({
         success : false,
