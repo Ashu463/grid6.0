@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
-import { UmService } from './um.service';
-import { UmController } from './um.controller';
-import { PrismaService } from 'src/prisma/prisma.service';
+
+import { PrismaService } from '../prisma/prisma.service';
+import { UserController } from './um.controller';
+import { UserService } from './um.service';
+import { JwtService } from '@nestjs/jwt';
+import { GoogleStrategy } from './strategy/googlesStrategy';
+
 @Module({
-  imports: [],
-  controllers: [UmController],
-  providers: [UmService, PrismaService],
+  controllers: [UserController],
+  providers: [UserService, PrismaService, JwtService, GoogleStrategy],
 })
-export class UmModule {}
+export class UserModule {}

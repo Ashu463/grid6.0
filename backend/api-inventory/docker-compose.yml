@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Service for the NestJS application
+  app:
+    build: .
+    ports:
+      - "9000:9000" # Maps port 3000 on the host to port 3000 in the container
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    depends_on:
+      - db # Ensures the database is up before the NestJS application starts
+
+  # Service for the PostgreSQL database
+  db:
+    image: postgres:14-alpine # Uses the official PostgreSQL image with version 14-alpine
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    volumes:
+      - db_data:/var/lib/postgresql/data # Persists the database data
+
+# Define a named volume for the database
+volumes:
+  db_data:
+
