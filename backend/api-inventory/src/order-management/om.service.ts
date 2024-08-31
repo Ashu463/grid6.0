@@ -81,7 +81,6 @@ export class OrderService {
   }
 
   async getAllOrders(userId: string) {
-    console.log(userId, ' req aa gyi from controller')
 
     if (!userId || typeof userId !== 'string') {
       throw new BadRequestException({
