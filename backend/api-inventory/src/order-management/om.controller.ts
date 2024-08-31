@@ -2,6 +2,7 @@ import { Controller, Post, Get, Put, Delete, Param, Body } from '@nestjs/common'
 import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { OrderService } from './om.service';
 import { CreateOrderDto, UpdateOrderStatusDto } from 'src/dto/om.dto';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @ApiTags('orders')
 @Controller('orders')
@@ -13,7 +14,7 @@ export class OrderController {
   @ApiBody({ type: CreateOrderDto, description: 'Data for creating a new order' })
   @ApiResponse({ status: 201, description: 'The order has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async createOrder(@Body('data') createOrderDto: CreateOrderDto) {
+  async createOrder(@Body('data') createOrderDto: CreateOrderDto) : Promise<UniversalResponseDTO>{
     return this.orderService.createOrder(createOrderDto);
   }
 
@@ -22,7 +23,7 @@ export class OrderController {
   @ApiParam({ name: 'orderId', description: 'The ID of the order to retrieve' })
   @ApiResponse({ status: 200, description: 'The order details have been successfully retrieved.' })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  async getOrder(@Param('orderId') orderId: string) {
+  async getOrder(@Param('orderId') orderId: string): Promise<UniversalResponseDTO> {
     return this.orderService.getOrderById(orderId);
   }
 
@@ -31,7 +32,7 @@ export class OrderController {
   @ApiParam({ name: 'userId', description: 'The ID of the user whose orders are being retrieved' })
   @ApiResponse({ status: 200, description: 'The user\'s orders have been successfully retrieved.' })
   @ApiResponse({ status: 404, description: 'No orders found for the user' })
-  async getAllOrders(@Param('userId') userId: string) {
+  async getAllOrders(@Param('userId') userId: string): Promise<UniversalResponseDTO> {
     return this.orderService.getAllOrders(userId);
   }
 
@@ -44,7 +45,7 @@ export class OrderController {
   async updateOrderStatus(
     @Param('orderId') orderId: string,
     @Body('data') updateOrderStatusDto: UpdateOrderStatusDto,
-  ) {
+  ) : Promise<UniversalResponseDTO>{
     return this.orderService.updateOrderStatus(orderId, updateOrderStatusDto);
   }
 
@@ -53,7 +54,7 @@ export class OrderController {
   @ApiParam({ name: 'orderId', description: 'The ID of the order to delete' })
   @ApiResponse({ status: 200, description: 'The order has been successfully deleted.' })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  async deleteOrder(@Param('orderId') orderId: string) {
+  async deleteOrder(@Param('orderId') orderId: string) : Promise<UniversalResponseDTO>{
     return this.orderService.deleteOrder(orderId);
   }
 }

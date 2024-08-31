@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { CreateOrderDto, UpdateOrderStatusDto } from 'src/dto/om.dto';
 import { validateOrReject } from 'class-validator';
 import { error } from 'console';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @Injectable()
 export class OrderService {
@@ -13,7 +14,7 @@ export class OrderService {
 
   constructor(private readonly prismaService: PrismaService) {}
 
-  async createOrder(createOrderDto: CreateOrderDto) {
+  async createOrder(createOrderDto: CreateOrderDto) : Promise<UniversalResponseDTO>{
     // Validate input DTO
     try {
       await validateOrReject(createOrderDto);
@@ -57,7 +58,7 @@ export class OrderService {
     }
   }
 
-  async getOrderById(orderId: string) {
+  async getOrderById(orderId: string): Promise<UniversalResponseDTO> {
     if (!orderId || typeof orderId !== 'string') {
       throw new BadRequestException({
         success : false,
@@ -76,12 +77,13 @@ export class OrderService {
 
     return {
       success: true,
+      message : 'Order retrieved successfully',
       data: order,
     };
   }
 
-  async getAllOrders(userId: string) {
 
+  async getAllOrders(userId: string) : Promise<UniversalResponseDTO>{
     if (!userId || typeof userId !== 'string') {
       throw new BadRequestException({
         success : false,
@@ -93,11 +95,12 @@ export class OrderService {
 
     return {
       success: true,
+      message : 'All orders retrieved successfully',
       data: orders,
     };
   }
 
-  async updateOrderStatus(orderId: string, updateOrderStatusDto: UpdateOrderStatusDto) {
+  async updateOrderStatus(orderId: string, updateOrderStatusDto: UpdateOrderStatusDto): Promise<UniversalResponseDTO> {
     // Validate input DTO
     try {
       await validateOrReject(updateOrderStatusDto);
@@ -137,7 +140,7 @@ export class OrderService {
     };
   }
 
-  async deleteOrder(orderId: string) {
+  async deleteOrder(orderId: string): Promise<UniversalResponseDTO> {
     if (!orderId || typeof orderId !== 'string') {
       throw new BadRequestException({
         success : false,

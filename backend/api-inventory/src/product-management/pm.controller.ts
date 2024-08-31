@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { PmService } from './pm.service';
 import { Product } from 'src/dto/pm.dto';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -13,7 +14,7 @@ export class PmController {
   @ApiBody({ type: Product, description: 'Data for creating a new product, excluding id, createdAt, and updatedAt' })
   @ApiResponse({ status: 201, description: 'The product has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@Body('data') createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) {
+  async create(@Body() createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>)  : Promise<UniversalResponseDTO> {
     return this.pmService.create(createProductDto);
   }
 
@@ -21,7 +22,7 @@ export class PmController {
   @ApiOperation({ summary: 'Retrieve all products' })
   @ApiResponse({ status: 200, description: 'List of all products retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'No products found' })
-  async findAll() {
+  async findAll() : Promise<UniversalResponseDTO>{
     return this.pmService.findAllProducts();
   }
 
@@ -30,7 +31,7 @@ export class PmController {
   @ApiParam({ name: 'id', description: 'The ID of the product to retrieve' })
   @ApiResponse({ status: 200, description: 'Product retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string)  : Promise<UniversalResponseDTO>{
     return this.pmService.findOne(id);
   }
 
@@ -40,7 +41,7 @@ export class PmController {
   @ApiBody({ description: 'Updated product data' })
   @ApiResponse({ status: 200, description: 'Product updated successfully.' })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  async update(@Param('id') id: string, @Body() updateProductDto) {
+  async update(@Param('id') id: string, @Body() updateProductDto) : Promise<UniversalResponseDTO>{
     return this.pmService.update(id, updateProductDto);
   }
 
@@ -49,7 +50,7 @@ export class PmController {
   @ApiParam({ name: 'id', description: 'The ID of the product to delete' })
   @ApiResponse({ status: 200, description: 'Product deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) : Promise<UniversalResponseDTO> {
     return this.pmService.remove(id);
   }
 }
