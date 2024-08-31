@@ -5,11 +5,11 @@ import { ReviewService } from './rm.service';
 import { CreateReviewDto } from 'src/dto/rm.dto';
 
 
-@Controller('products')
+@Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
-  @Post(':productId/reviews')
+  @Post(':productId')
   async createReview(
     @Param('productId') productId: string,
     @Body('data') createReviewDto: CreateReviewDto,
@@ -17,12 +17,12 @@ export class ReviewController {
     return this.reviewService.createReview({ ...createReviewDto, productId });
   }
 
-  @Get(':productId/reviews')
+  @Get(':productId')
   async getReviewsByProduct(@Param('productId') productId: string) {
     return this.reviewService.getReviewsByProduct(productId);
   }
 
-  @Delete('reviews/:reviewId')
+  @Delete(':reviewId')
   async deleteReview(@Param('reviewId') reviewId: string) {
     return this.reviewService.deleteReview(reviewId);
   }
