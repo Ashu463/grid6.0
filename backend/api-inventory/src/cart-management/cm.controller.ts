@@ -14,7 +14,6 @@ export class CartController {
   @ApiResponse({ status: 201, description: 'The cart has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async createCart(@Body('data') createCartDto: CreateCartDto) {
-    console.log(createCartDto, " is the data going from controller")
     return this.cartService.createCart(createCartDto);
   }
 
@@ -24,7 +23,6 @@ export class CartController {
   @ApiResponse({ status: 200, description: 'The cart has been successfully retrieved.' })
   @ApiResponse({ status: 404, description: 'Cart not found' })
   async getCart(@Body('userId') userId: string) {
-    console.log("controller se req gyi", userId)
     return this.cartService.getCart(userId);
   }
 
