@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { CategoriesService } from './cam.service';
 import { CreateCategoryDto, UpdateCategoryDto } from 'src/dto/cam.dto';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @ApiTags('categories')
 @Controller('categories')
@@ -12,14 +13,14 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Create a new category' })
   @ApiResponse({ status: 201, description: 'Category created successfully.' })
   @ApiBody({ type: CreateCategoryDto, description: 'Category data' })
-  async create(@Body('data') createCategoryDto: CreateCategoryDto) {
+  async create(@Body('data') createCategoryDto: CreateCategoryDto): Promise<UniversalResponseDTO> {
     return this.categoriesService.create(createCategoryDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all categories' })
   @ApiResponse({ status: 200, description: 'Retrieved all categories.' })
-  async findAll() {
+  async findAll(): Promise<UniversalResponseDTO> {
     return this.categoriesService.findAll();
   }
 
@@ -27,7 +28,7 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Get a category by ID' })
   @ApiResponse({ status: 200, description: 'Category retrieved successfully.' })
   @ApiParam({ name: 'id', description: 'Category ID' })
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<UniversalResponseDTO> {
     return this.categoriesService.findOne(id);
   }
 
@@ -39,7 +40,7 @@ export class CategoriesController {
   async update(
     @Param('id') id: string,
     @Body('data') updateCategoryDto: UpdateCategoryDto,
-  ) {
+  ): Promise<UniversalResponseDTO> {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 
@@ -47,7 +48,7 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Delete a category by ID' })
   @ApiResponse({ status: 200, description: 'Category deleted successfully.' })
   @ApiParam({ name: 'id', description: 'Category ID' })
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<UniversalResponseDTO> {
     return this.categoriesService.remove(id);
   }
 }

@@ -3,6 +3,7 @@ import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/s
 import { UserService } from './um.service';
 import { LoginUserDto, RegisterUserDto, updatePasswordDTO, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -12,7 +13,7 @@ export class UserController {
   
   @Get('/google/callback')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req){
+  googleAuthRedirect(@Req() req): Promise<UniversalResponseDTO>{
     return this.userService.validateOAuthLogin(req)
   }
 
@@ -21,7 +22,7 @@ export class UserController {
   @ApiBody({ type: RegisterUserDto, description: 'Data for registering a new user' })
   @ApiResponse({ status: 201, description: 'User registered successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async register(@Body('data') registerUserDto: RegisterUserDto) {
+  async register(@Body('data') registerUserDto: RegisterUserDto): Promise<UniversalResponseDTO> {
     return this.userService.registerUser(registerUserDto);
   }
 
@@ -30,7 +31,7 @@ export class UserController {
   @ApiBody({ type: LoginUserDto, description: 'Data for logging in a user' })
   @ApiResponse({ status: 200, description: 'User logged in successfully and token returned.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async login(@Body('data') loginUserDto: LoginUserDto, @Headers('jwt-token') token ?: string) {
+  async login(@Body('data') loginUserDto: LoginUserDto, @Headers('jwt-token') token ?: string): Promise<UniversalResponseDTO> {
     return this.userService.loginUser(loginUserDto, token);
   }
 
@@ -38,7 +39,7 @@ export class UserController {
   @ApiOperation({ summary: 'Logout a user' })
   @ApiBody({ description: 'User ID for logging out' })
   @ApiResponse({ status: 200, description: 'User logged out successfully.' })
-  async logout(@Body('data') loginDTO: LoginUserDto){
+  async logout(@Body('data') loginDTO: LoginUserDto): Promise<UniversalResponseDTO>{
     return this.userService.logoutUser(loginDTO);
   }
 
@@ -47,7 +48,7 @@ export class UserController {
   @ApiParam({ name: 'userId', description: 'The ID of the user to retrieve' })
   @ApiResponse({ status: 200, description: 'User details retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getUser(@Param('userId') userId: string) {
+  async getUser(@Param('userId') userId: string): Promise<UniversalResponseDTO> {
     return this.userService.getUserById(userId);
   }
 
@@ -60,7 +61,7 @@ export class UserController {
   async updateUser(
     @Param('userId') userId: string,
     @Body('data') updateUserDto: UpdateUserDto
-  ){
+  ): Promise<UniversalResponseDTO>{
     return this.userService.updateUser(userId, updateUserDto);
   }
   @Put('reset-password/:userId')
@@ -72,7 +73,7 @@ export class UserController {
   async updatePassword(
     @Param('userId') userId: string,
     @Body('data') data: updatePasswordDTO
-  ){
+  ): Promise<UniversalResponseDTO>{
     return this.userService.updatePassword(userId, data);
   }
 
@@ -81,7 +82,7 @@ export class UserController {
   @ApiParam({ name: 'userId', description: 'The ID of the user to delete' })
   @ApiResponse({ status: 200, description: 'User deleted successfully.' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async deleteUser(@Param('userId') userId: string){
+  async deleteUser(@Param('userId') userId: string): Promise<UniversalResponseDTO>{
     return this.userService.deleteUser(userId);
   }
 }

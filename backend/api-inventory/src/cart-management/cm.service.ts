@@ -1,14 +1,15 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, BadGatewayException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'crypto';
-import { AddItemToCartDto, CreateCartDto, UpdateCartItemDto } from 'src/dto/cm.dto';
+import { AddItemToCartDto, CreateCartDto, getCartDTO, UpdateCartItemDto } from 'src/dto/cm.dto';
 import { validateOrReject } from 'class-validator';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @Injectable()
 export class CartService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async createCart(createCartDto: CreateCartDto) {
+  async createCart(createCartDto: CreateCartDto): Promise<UniversalResponseDTO> {
     // Input validation
     try {
       await validateOrReject(createCartDto);
@@ -19,7 +20,6 @@ export class CartService {
         errors,
       });
     }
-
     if (!createCartDto) {
       throw new BadRequestException({
         success: false,
@@ -35,11 +35,15 @@ export class CartService {
         updatedAt: new Date(),
       },
     });
-    return cart;
+    return{
+      success : true,
+      message : 'cart created successfully',
+      data : cart
+    };
   }
 
-  async getCart(userId: string) {
-    if (!userId) {
+  async getCart(data: getCartDTO): Promise<UniversalResponseDTO> {
+    if (!data) {
       throw new BadRequestException({
         success : false,
         message : 'User ID is required to retrieve the cart'
@@ -47,8 +51,7 @@ export class CartService {
     }
 
     const cart = await this.prismaService.cart.findUnique({
-      where: { id: userId },
-      include: { items: true },
+      where: {id : data.id, userId: data.userId },
     });
     if (!cart) {
       throw new NotFoundException({
@@ -56,10 +59,14 @@ export class CartService {
         message : 'Cart not found'
       });
     }
-    return cart;
+    return{
+      success : true,
+      message : 'cart retrieved successfully',
+      data : cart
+    };
   }
 
-  async addItemToCart(userId: string, addItemToCartDto: AddItemToCartDto) {
+  async addItemToCart(addItemToCartDto: AddItemToCartDto){
     // Input validation
     try {
       await validateOrReject(addItemToCartDto);
@@ -67,23 +74,43 @@ export class CartService {
       throw new BadRequestException({
         success: false,
         message: 'Validation failed',
-        errors,
       });
     }
-
-    const cart = await this.getCart(userId);
-    const item = await this.prismaService.cartItem.create({
-      data: {
-        id: randomUUID(),
-        cartId: cart.id,
-        productId: addItemToCartDto.productId,
-        quantity: addItemToCartDto.quantity,
-      },
-    });
-    return item;
+    
+    const id = await this.prismaService.cart.findUnique({where : {id : addItemToCartDto.id, userId : addItemToCartDto.userId}})
+    if(!id){
+      throw new BadGatewayException({
+        successs : false,
+        message : 'user with such crednetials not found'
+      })
+    }
+    const items = {
+      id : addItemToCartDto.id,
+      userId : addItemToCartDto.userId,
+      
+      createdAt : new Date(),
+      updatedAt : new Date(),
+    }
+    const res = await this.prismaService.cartItem.create({ data : {
+      id : addItemToCartDto.id,
+      cartId: id.id,
+      productId : addItemToCartDto.productId,
+      quantity : addItemToCartDto.quantity
+    }})
+    if(!res){
+      throw new BadGatewayException({
+        success : false,
+        message : 'error occured while adding items to cart'
+      })
+    }
+    return {
+      success : true,
+      message : 'items added to cart',
+      data : res
+    }
   }
 
-  async updateCartItem(itemId: string, updateCartItemDto: UpdateCartItemDto) {
+  async updateCartItem(itemId: string, updateCartItemDto: UpdateCartItemDto): Promise<UniversalResponseDTO> {
     // Input validation
     try {
       await validateOrReject(updateCartItemDto);
@@ -107,10 +134,14 @@ export class CartService {
       });
     }
 
-    return item;
+    return{
+      success : true,
+      message : 'Updated cart item successfully',
+      data : item
+    };
   }
 
-  async removeItemFromCart(itemId: string) {
+  async removeItemFromCart(itemId: string): Promise<UniversalResponseDTO>{
     if (!itemId) {
       throw new BadRequestException({
         success : false ,
@@ -121,10 +152,12 @@ export class CartService {
     await this.prismaService.cartItem.delete({
       where: { id: itemId },
     });
-    return { message: 'Item removed from cart' };
+    return { 
+      success : true,
+      message: 'Item removed from cart' };
   }
 
-  async clearCart(userId: string) {
+  async clearCart(userId: string){
     if (!userId) {
       throw new BadRequestException({
         success : false,
@@ -132,10 +165,23 @@ export class CartService {
       });
     }
 
-    const cart = await this.getCart(userId);
-    await this.prismaService.cartItem.deleteMany({
-      where: { cartId: cart.id },
-    });
-    return { message: 'Cart cleared' };
+    const cart = await this.prismaService.cart.findUnique({where : {id : userId}})
+    if(!cart){
+      throw new BadRequestException({
+        success : false,
+        message : 'cart does not exist'
+      })
+    }
+    const res = await this.prismaService.cart.delete({where : {id : userId}})
+    if(!res){
+      throw new BadGatewayException({
+        success : false,
+        message : 'error while creating cart'
+      })
+    }
+    return { 
+      success: true,
+      message: 'Cart cleared' 
+    };
   }
 }

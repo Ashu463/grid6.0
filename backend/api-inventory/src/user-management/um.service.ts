@@ -6,6 +6,7 @@ import { LoginUserDto, RegisterUserDto, updatePasswordDTO, UpdateUserDto, UserRe
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { JwtService } from '@nestjs/jwt';
+import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 
 @Injectable()
@@ -13,17 +14,21 @@ export class UserService {
   private readonly logger: Logger;
   constructor(private readonly prismaService: PrismaService, private readonly jwtService: JwtService) { this.logger = new Logger() }
 
-  async validateOAuthLogin(profile: any): Promise<any> {
+  async validateOAuthLogin(profile: any): Promise<UniversalResponseDTO> {
     if (!profile) {
-      return 'no user from google'
+      return {
+        success : false,
+        message : 'no user from google'
+      }
     }
     return {
+      success : true,
       message: 'user info from google',
-      user: profile.user
+      data: profile.user
     }
   }
 
-  async registerUser(registerUserDto: RegisterUserDto) {
+  async registerUser(registerUserDto: RegisterUserDto): Promise<UniversalResponseDTO> {
     if (!registerUserDto) {
       throw new BadRequestException({
         success: false,
@@ -72,7 +77,7 @@ export class UserService {
     }
   }
 
-  async loginUser(loginUserDto: LoginUserDto, headers?: string) {
+  async loginUser(loginUserDto: LoginUserDto, headers?: string): Promise<UniversalResponseDTO>{
 
     if (!loginUserDto) {
       throw new BadRequestException({
@@ -106,7 +111,7 @@ export class UserService {
         token = this.generateJWT({ email: loginUserDto.email }, loginUserDto.secretKey)
       }
       return {
-        sucess: true,
+        success: true,
         message: 'congrats you were verified',
         data: token
       }
@@ -119,7 +124,7 @@ export class UserService {
     }
   }
 
-  async logoutUser(loginUserDto: LoginUserDto) {
+  async logoutUser(loginUserDto: LoginUserDto): Promise<UniversalResponseDTO> {
     // Invalidate user session logic here (e.g., remove token from DB)
     // This is a placeholder
     if (!loginUserDto) {
@@ -158,7 +163,7 @@ export class UserService {
     }
   }
 
-  async getUserById(userId: string) {
+  async getUserById(userId: string): Promise<UniversalResponseDTO> {
     if (!userId) {
       throw new BadGatewayException({
         success: false,
@@ -183,7 +188,7 @@ export class UserService {
     }
   }
 
-  async updateUser(userId: string, updateUserDto: UpdateUserDto) {
+  async updateUser(userId: string, updateUserDto: UpdateUserDto): Promise<UniversalResponseDTO> {
     if (!userId || !updateUserDto) {
       throw new BadGatewayException({
         success: false,
@@ -223,7 +228,7 @@ export class UserService {
     }
 
   }
-  async updatePassword(userId: string, data: updatePasswordDTO) {
+  async updatePassword(userId: string, data: updatePasswordDTO): Promise<UniversalResponseDTO> {
     if (!userId || !data) {
       throw new BadGatewayException({
         success: false,
@@ -280,7 +285,7 @@ export class UserService {
 
   }
 
-  async deleteUser(userId: string) {
+  async deleteUser(userId: string): Promise<UniversalResponseDTO> {
     if (!userId) {
       throw new BadGatewayException({
         success: false,

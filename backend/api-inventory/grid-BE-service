@@ -439,33 +439,6 @@
         "tags": [
           "cart"
         ]
-      },
-      "delete": {
-        "operationId": "CartController_clearCart",
-        "summary": "Clear the cart",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "description": "User ID",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The cart has been successfully cleared."
-          },
-          "404": {
-            "description": "Cart not found"
-          }
-        },
-        "tags": [
-          "cart"
-        ]
       }
     },
     "/cart/items": {
@@ -842,6 +815,223 @@
           "payments"
         ]
       }
+    },
+    "/categories": {
+      "post": {
+        "operationId": "CategoriesController_create",
+        "summary": "Create a new category",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Category data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category created successfully."
+          }
+        },
+        "tags": [
+          "categories"
+        ]
+      },
+      "get": {
+        "operationId": "CategoriesController_findAll",
+        "summary": "Get all categories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Retrieved all categories."
+          }
+        },
+        "tags": [
+          "categories"
+        ]
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "operationId": "CategoriesController_findOne",
+        "summary": "Get a category by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Category ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category retrieved successfully."
+          }
+        },
+        "tags": [
+          "categories"
+        ]
+      },
+      "put": {
+        "operationId": "CategoriesController_update",
+        "summary": "Update a category by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Category ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Updated category data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated successfully."
+          }
+        },
+        "tags": [
+          "categories"
+        ]
+      },
+      "delete": {
+        "operationId": "CategoriesController_remove",
+        "summary": "Delete a category by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Category ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category deleted successfully."
+          }
+        },
+        "tags": [
+          "categories"
+        ]
+      }
+    },
+    "/reviews/{productId}": {
+      "post": {
+        "operationId": "ReviewController_createReview",
+        "summary": "Create a new review for a product",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "ID of the product",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Review data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The review has been successfully created."
+          },
+          "400": {
+            "description": "Invalid input, object invalid."
+          },
+          "404": {
+            "description": "Product not found."
+          }
+        },
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "get": {
+        "operationId": "ReviewController_getReviewsByProduct",
+        "summary": "Get all reviews for a product",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "ID of the product",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reviews retrieved successfully."
+          },
+          "404": {
+            "description": "No reviews found for this product."
+          }
+        },
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/reviews/{reviewId}": {
+      "delete": {
+        "operationId": "ReviewController_deleteReview",
+        "summary": "Delete a review",
+        "parameters": [
+          {
+            "name": "reviewId",
+            "required": true,
+            "in": "path",
+            "description": "ID of the review to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review deleted successfully."
+          },
+          "404": {
+            "description": "Review not found."
+          }
+        },
+        "tags": [
+          "Reviews"
+        ]
+      }
     }
   },
   "info": {
@@ -1128,6 +1318,43 @@
           "paymentId",
           "refundAmount"
         ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Electronics",
+            "description": "The name of the category"
+          },
+          "description": {
+            "type": "string",
+            "example": "Devices and gadgets",
+            "description": "A brief description of the category"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Electronics",
+            "description": "The name of the category"
+          },
+          "description": {
+            "type": "string",
+            "example": "Devices and gadgets",
+            "description": "A brief description of the category"
+          }
+        }
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

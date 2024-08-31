@@ -5,12 +5,24 @@ export class CreateCartDto {
   userId: string;
 }
 
+export class getCartDTO {
+  @ApiProperty({ description: 'The ID of the user creating the cart' })
+  userId: string;
+  
+  @ApiProperty({ description: 'The ID of the user creating the cart' })
+  id: string;
+}
+
 export class AddItemToCartDto {
+
   @ApiProperty({ description: 'The ID of the product to add to the cart' })
   productId: string;
 
   @ApiProperty({ description: 'The quantity of the product to add', example: 1 })
   quantity: number;
+
+  userId : string
+  id : string
 }
 
 export class UpdateCartItemDto {
