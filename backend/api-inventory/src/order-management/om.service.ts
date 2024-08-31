@@ -43,6 +43,7 @@ export class OrderService {
 
     try {
       const order = await this.prismaService.order.create({ data: newOrder });
+      
       return {
         success: true,
         message: 'Order created successfully',
@@ -81,9 +82,8 @@ export class OrderService {
     };
   }
 
-  async getAllOrders(userId: string) : Promise<UniversalResponseDTO>{
-    console.log(userId, ' req aa gyi from controller')
 
+  async getAllOrders(userId: string) : Promise<UniversalResponseDTO>{
     if (!userId || typeof userId !== 'string') {
       throw new BadRequestException({
         success : false,

@@ -51,7 +51,6 @@ export class PmService {
         message: 'products not found'
       })
     }
-    console.log(products, "--------------------")
     return {
       success: true,
       message: 'all products returned successfully',

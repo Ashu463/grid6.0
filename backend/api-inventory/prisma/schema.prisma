@@ -19,6 +19,7 @@ model User {
   email     String   @unique
   username  String
   password  String
+  secretKey String
 }
 model Product {
   id        String   @id 
@@ -28,7 +29,17 @@ model Product {
   description String
   price     Int
   imageUrl  String
+  reviews     Review[]  // Relation to reviews
 }
+
+model Category {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 
 model Cart {
   id        String   @id @default(uuid())
@@ -94,3 +105,14 @@ model Refund {
   updatedAt DateTime @updatedAt
 }
 
+
+model Review {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rating    Int
+  comment   String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+
+}
