@@ -12,7 +12,7 @@ const TableRow: React.FC<TableRowProps> = ({ data, onClick }) => {
       className="cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out"
     >
       {data.map((item, index) => (
-        <td key={index} className="border p-4 text-white border-gray-600">
+        <td key={index} className="border p-4 text-white border-gray-600 text-center font-semibold">
           {item}
         </td>
       ))}

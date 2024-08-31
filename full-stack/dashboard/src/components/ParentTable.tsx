@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import TableRow from './tableRow';
+import TableRow from './TableRow';
 import ChildTable from './ChildTable';
 
 interface ParentTableProps {}
@@ -8,26 +8,224 @@ const ParentTable: React.FC<ParentTableProps> = () => {
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
 
   const data: string[][] = [
-    ['Row 1, Col 1', 'Row 1, Col 2', 'Row 1, Col 3', 'Row 1, Col 4', 'Row 1, Col 5'],
-    ['Row 2, Col 1', 'Row 2, Col 2', 'Row 2, Col 3', 'Row 2, Col 4', 'Row 2, Col 5'],
-    // Add more rows as needed
+    ['Cart Management'],
+    ['Order Management'],
+    ['Product Management'],
+    ['Shipping Management'],
+    ['User Management'],
+    ['Payment Processing'],
   ];
 
   const childData = [
+  // Child data for "Cart Management"
+  [
     {
-      apiName: 'API 1',
+      requestType:'POST',
+      apiName: '/cart',
       lastSecurityScanDate: '2024-08-28',
       vulnerabilitiesDetected: '2',
       mitigationStatus: 'Mitigated',
     },
     {
-      apiName: 'API 2',
+      requestType:'GET',
+      apiName: '/cart',
+      lastSecurityScanDate: '2024-08-25',
+      vulnerabilitiesDetected: '5',
+      mitigationStatus: 'Pending',
+    },
+    {
+      requestType:'POST',
+      apiName: '/cart/items',
       lastSecurityScanDate: '2024-08-25',
       vulnerabilitiesDetected: '5',
       mitigationStatus: 'In Progress',
     },
-    // Add more child rows as needed
-  ];
+    {
+      requestType:'PUT',
+      apiName: '/cart/items/:itemId',
+      lastSecurityScanDate: '2024-08-28',
+      vulnerabilitiesDetected: '2',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'DELETE',
+      apiName: '/cart/items/:itemId',
+      lastSecurityScanDate: '2024-08-25',
+      vulnerabilitiesDetected: '5',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'DELETE',
+      apiName: '/cart',
+      lastSecurityScanDate: '2024-08-25',
+      vulnerabilitiesDetected: '5',
+      mitigationStatus: 'In Progress',
+    },
+  ],
+  // Child data for "Order Management"
+  [
+    {
+      requestType:'POST',
+      apiName: '/orders',
+      lastSecurityScanDate: '2024-08-20',
+      vulnerabilitiesDetected: '0',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'GET',
+      apiName: '/orders/:orderId',
+      lastSecurityScanDate: '2024-08-18',
+      vulnerabilitiesDetected: '3',
+      mitigationStatus: 'In Progress',
+    },
+    {
+      requestType:'GET',
+      apiName: '/orders/user/:userId',
+      lastSecurityScanDate: '2024-08-18',
+      vulnerabilitiesDetected: '3',
+      mitigationStatus: 'In Progress',
+    },
+    {
+      requestType:'PUT',
+      apiName: '/orders/:orderId',
+      lastSecurityScanDate: '2024-08-20',
+      vulnerabilitiesDetected: '6',
+      mitigationStatus: 'Pending',
+    },
+    {
+      requestType:'DELETE',
+      apiName: '/orders/:orderId',
+      lastSecurityScanDate: '2024-08-20',
+      vulnerabilitiesDetected: '0',
+      mitigationStatus: 'Mitigated',
+    },
+  ],
+  // Child data for "Product Management"
+  [
+    {
+      requestType:'POST',
+      apiName: '/products',
+      lastSecurityScanDate: '2024-08-22',
+      vulnerabilitiesDetected: '1',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'GET',
+      apiName: 'products',
+      lastSecurityScanDate: '2024-08-21',
+      vulnerabilitiesDetected: '4',
+      mitigationStatus: 'Pending',
+    },
+    {
+      requestType:'GET',
+      apiName: 'products/:id',
+      lastSecurityScanDate: '2024-08-21',
+      vulnerabilitiesDetected: '4',
+      mitigationStatus: 'In Progress',
+    },
+    {
+      requestType:'PUT',
+      apiName: '/products/:id',
+      lastSecurityScanDate: '2024-08-22',
+      vulnerabilitiesDetected: '1',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'DELETE',
+      apiName: '/products/:id',
+      lastSecurityScanDate: '2024-08-22',
+      vulnerabilitiesDetected: '9',
+      mitigationStatus: 'Pending',
+    },
+  ],
+  // Child data for "Shipping Management"
+  [
+    {
+      requestType:'GET',
+      apiName: '/shipping/methods',
+      lastSecurityScanDate: '2024-08-15',
+      vulnerabilitiesDetected: '0',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'POST',
+      apiName: '/shipping/estimate',
+      lastSecurityScanDate: '2024-08-13',
+      vulnerabilitiesDetected: '2',
+      mitigationStatus: 'In Progress',
+    },
+  ],
+  // Child data for "User Management"
+  [
+    {
+      requestType:'POST',
+      apiName: '/auth/register',
+      lastSecurityScanDate: '2024-08-19',
+      vulnerabilitiesDetected: '3',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'POST',
+      apiName: '/auth/login',
+      lastSecurityScanDate: '2024-08-17',
+      vulnerabilitiesDetected: '1',
+      mitigationStatus: 'Pending',
+    },
+    {
+      requestType:'POST',
+      apiName: '/auth/logout',
+      lastSecurityScanDate: '2024-08-17',
+      vulnerabilitiesDetected: '2',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'GET',
+      apiName: '/auth/users/:userId',
+      lastSecurityScanDate: '2024-08-17',
+      vulnerabilitiesDetected: '1',
+      mitigationStatus: 'Pending',
+    },
+    {
+      requestType:'PUT',
+      apiName: '/auth/users/:userId',
+      lastSecurityScanDate: '2024-08-17',
+      vulnerabilitiesDetected: '0',
+      mitigationStatus: 'In Progress',
+    },
+    {
+      requestType:'DELETE',
+      apiName: '/auth/users/:userId',
+      lastSecurityScanDate: '2024-08-17',
+      vulnerabilitiesDetected: '1',
+      mitigationStatus: 'Mitigated',
+    },
+  ],
+  // Child data for "Payment Processing"
+  [
+    {
+      requestType:'POST',
+      apiName: '/payments',
+      lastSecurityScanDate: '2024-08-16',
+      vulnerabilitiesDetected: '6',
+      mitigationStatus: 'In Progress',
+    },
+    {
+      requestType:'GET',
+      apiName: '/payments/:paymentId',
+      lastSecurityScanDate: '2024-08-14',
+      vulnerabilitiesDetected: '2',
+      mitigationStatus: 'Mitigated',
+    },
+    {
+      requestType:'POST',
+      apiName: '/payments/refund',
+      lastSecurityScanDate: '2024-08-14',
+      vulnerabilitiesDetected: '2',
+      mitigationStatus: 'Mitigated',
+    },
+  ],
+];
+
 
   const handleRowClick = (index: number) => {
     setSelectedRow((prevSelectedRow) =>
@@ -40,11 +238,7 @@ const ParentTable: React.FC<ParentTableProps> = () => {
       <table className="border-collapse border border-gray-600 w-full text-sm">
         <thead>
           <tr className="bg-gray-900">
-            <th className="border p-2 text-gray-300 border-gray-600 w-32">Column 1</th>
-            <th className="border p-2 text-gray-300 border-gray-600">Column 2</th>
-            <th className="border p-2 text-gray-300 border-gray-600">Column 3</th>
-            <th className="border p-2 text-gray-300 border-gray-600">Column 4</th>
-            <th className="border p-2 text-gray-300 border-gray-600">Column 5</th>
+            <th className="border p-2 text-gray-300 border-gray-600 w-32">Type</th>
           </tr>
         </thead>
         <tbody>
@@ -53,17 +247,13 @@ const ParentTable: React.FC<ParentTableProps> = () => {
               <TableRow data={row} onClick={() => handleRowClick(index)} />
               {selectedRow === index && (
                 <tr className="relative">
-                  {/* Empty space under the first column */}
-                  <td className="p-0" />
-
-                  {/* Child table spanning columns 2 to 5 */}
-                  <td colSpan={4} className="p-0">
+                  <td colSpan={1} className="p-0">
                     <div
                       className={`overflow-hidden transition-all duration-500 ease-in-out transform ${
                         selectedRow === index ? 'max-h-screen scale-100' : 'max-h-0 scale-95'
                       }`}
                     >
-                      <ChildTable childData={childData} />
+                      <ChildTable childData={childData[index] || []} />
                     </div>
                   </td>
                 </tr>

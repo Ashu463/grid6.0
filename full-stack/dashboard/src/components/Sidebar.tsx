@@ -5,20 +5,20 @@ import React from 'react';
 const Sidebar: React.FC = () => {
   return (
     <>
-    <div className="w-64 h-screen bg-gray-800 text-white fixed top-0 left-0 p-5">
+    <div className="w-64 h-screen bg-gray-800 text-white fixed top-0 left-0 p-5 flex flex-col items-center">
       <h2 className="text-2xl font-semibold mb-8">Navigation</h2>
-      <ul>
-        <li className="mb-4">
-          <Link href="/" className="text-lg hover:underline">Home</Link>
+      <ul className='w-full flex flex-col items-center'>
+        <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
+          <Link href="/" className="text-lg">Home</Link>
         </li>
-        <li className="mb-4">
-          <Link href="/about" className="text-lg hover:underline">About</Link>
+        <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
+          <Link href="/services" className="text-lg">History</Link>
         </li>
-        <li className="mb-4">
-          <Link href="/services" className="text-lg hover:underline">Services</Link>
+        <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
+          <Link href="/docs" className="text-lg">Docs</Link>
         </li>
-        <li className="mb-4">
-          <Link href="/contact" className="text-lg hover:underline">Contact</Link>
+        <li className="mb-4 cursor-pointer hover:bg-gray-700 transition duration-200 ease-in-out px-14">
+          <Link href="/contact" className="text-lg">Contact</Link>
         </li>
       </ul>
     </div>
