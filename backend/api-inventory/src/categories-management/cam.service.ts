@@ -1,12 +1,14 @@
 import { BadGatewayException, BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateCategoryDto, UpdateCategoryDto } from 'src/dto/cam.dto';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class CategoriesService {
   private readonly logger : Logger
-  constructor(private prisma: PrismaService) {this.logger = new Logger()}
+  constructor(private prismaService: PrismaService) {this.logger = new Logger()}
 
-  async create(data: { name: string; description?: string }) {
+  async create( data: CreateCategoryDto) {
     if(!data){
       throw new BadRequestException({
         success : false, 
@@ -14,7 +16,16 @@ export class CategoriesService {
       })
     }
     try {
-      const res = await this.prisma.category.create({data})
+      
+      const res = await this.prismaService.category.create({ 
+        data : {
+          name : data.name,
+          description : data.description,
+          id : randomUUID(),
+          createdAt : new Date(),
+          updatedAt : new Date()          
+        }
+       })
       if(!res){
         throw new BadGatewayException({
           success : false, 
@@ -37,7 +48,7 @@ export class CategoriesService {
 
   async findAll() {
     try {
-      const res = await this.prisma.category.findMany()
+      const res = await this.prismaService.category.findMany()
       if(!res){
         throw new BadGatewayException({
           success : false, 
@@ -58,7 +69,7 @@ export class CategoriesService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     if(!id){
       throw new BadRequestException({
         success : false, 
@@ -66,7 +77,7 @@ export class CategoriesService {
       })
     }
     try {
-      const res = await this.prisma.category.findUnique({where : {id}})
+      const res = await this.prismaService.category.findUnique({where : {id}})
       if(!res){
         throw new BadGatewayException({
           success : false, 
@@ -87,7 +98,7 @@ export class CategoriesService {
     }
   }
 
-  async update(id: number, data: { name?: string; description?: string }) {
+  async update(id: string, data: UpdateCategoryDto) {
     if(!data || !id){
       throw new BadRequestException({
         success : false, 
@@ -95,7 +106,7 @@ export class CategoriesService {
       })
     }
     try {
-      const res = await this.prisma.category.update({where : {id}, data})
+      const res = await this.prismaService.category.update({where : {id}, data})
       if(!res){
         throw new BadGatewayException({
           success : false, 
@@ -116,7 +127,7 @@ export class CategoriesService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     if(!id){
       throw new BadRequestException({
         success : false, 
@@ -124,7 +135,7 @@ export class CategoriesService {
       })
     }
     try {
-      const res = await this.prisma.category.delete({where : {id}})
+      const res = await this.prismaService.category.delete({where : {id}})
       if(!res){
         throw new BadGatewayException({
           success : false, 
