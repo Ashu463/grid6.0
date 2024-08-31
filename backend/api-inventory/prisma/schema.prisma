@@ -29,6 +29,7 @@ model Product {
   description String
   price     Int
   imageUrl  String
+  reviews     Review[]  // Relation to reviews
 }
 
 model Category {
@@ -104,3 +105,14 @@ model Refund {
   updatedAt DateTime @updatedAt
 }
 
+
+model Review {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rating    Int
+  comment   String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+
+}

@@ -13,7 +13,7 @@ export class PmController {
   @ApiBody({ type: Product, description: 'Data for creating a new product, excluding id, createdAt, and updatedAt' })
   @ApiResponse({ status: 201, description: 'The product has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@Body() createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) {
+  async create(@Body('data') createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) {
     return this.pmService.create(createProductDto);
   }
 
