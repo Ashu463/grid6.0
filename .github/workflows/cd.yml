@@ -1,0 +1,47 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - master  # Deploy only when changes are pushed to the 'main' branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'  # Use the Node.js version your project requires
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the project
+      run: npm run build  # This command should match your project's build command
+
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H your-ec2-public-ip >> ~/.ssh/known_hosts
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy application via SSH
+      run: |
+        ssh -i ~/.ssh/id_rsa ubuntu@your-ec2-public-ip << 'EOF'
+          cd infoSec/grid6.0/backend/api-inventory
+          git pull origin master
+          npm install
+          npm run build
+          sudo docker-compose up -d  
+        EOF
+
+    - name: Clean up
+      run: rm -f ~/.ssh/id_rsa  # Remove the private key after the deployment is complete
