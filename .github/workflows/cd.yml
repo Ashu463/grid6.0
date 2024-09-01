@@ -1,47 +1,66 @@
-name: Deploy to AWS EC2
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
-      - master  # Deploy only when changes are pushed to the 'main' branch
+      - main  # Adjust this if your main branch has a different name
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'  # Use the Node.js version your project requires
+        node-version: 18
 
     - name: Install dependencies
-      run: npm install
-
-    - name: Build the project
-      run: npm run build  # This command should match your project's build command
-
-    - name: Set up SSH
       run: |
-        mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H your-ec2-public-ip >> ~/.ssh/known_hosts
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        cd infoSec/grid6.0/backend/api-inventory
+        npm install
 
-    - name: Deploy application via SSH
+    - name: Run tests
       run: |
-        ssh -i ~/.ssh/id_rsa ubuntu@your-ec2-public-ip << 'EOF'
-          cd infoSec/grid6.0/backend/api-inventory
-          git pull origin master
-          npm install
-          npm run build
-          sudo docker-compose up -d  
-        EOF
+        cd infoSec/grid6.0/backend/api-inventory
+        npm run test
 
-    - name: Clean up
-      run: rm -f ~/.ssh/id_rsa  # Remove the private key after the deployment is complete
+    - name: Build the Docker image
+      run: |
+        cd infoSec/grid6.0/backend/api-inventory
+        docker build -t your-dockerhub-username/your-image-name:latest .
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - name: Push the Docker image
+      run: |
+        cd infoSec/grid6.0/backend/api-inventory
+        docker push your-dockerhub-username/your-image-name:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        script: |
+          cd /path/to/your/app  # Adjust this to the actual path on your EC2 instance
+          docker-compose down    # Stops existing containers
+          docker-compose pull    # Pulls the latest image from Docker Hub
+          docker-compose up -d   # Starts the containers in detached mode
