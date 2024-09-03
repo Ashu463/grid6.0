@@ -37,7 +37,7 @@ async function bootstrap() {
     encoding: 'utf8',
   });
   await app.listen(9000, '0.0.0.0');
-  console.log("app is running at port 9000")
+  console.log("backend application is running")
 
 }
 bootstrap();
