@@ -37,7 +37,7 @@ async function bootstrap() {
     encoding: 'utf8',
   });
   await app.listen(9000, '0.0.0.0');
-  console.log("backend application is running")
+  console.log("backend application is running on port 9000 edited by bonobo")
 
 }
 bootstrap();
