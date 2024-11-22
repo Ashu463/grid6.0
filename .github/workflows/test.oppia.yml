@@ -61,6 +61,7 @@ jobs:
                     )
                     print(f"Unassigned issue #{issue.number} from {issue.assignee.login} due to inactivity")
         if __name__ == "__main__":
+            print("python script is running ashu")
             github_token = os.environ["GITHUB_TOKEN"]
             repo_owner = "oppia"
             repo_name = "oppia"
