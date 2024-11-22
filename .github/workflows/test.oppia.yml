@@ -20,16 +20,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       
-        
-    - name: Initialize Containers
-      run: |
-        make build
-        make stop
 
-    - name: Debug Python
-      run: |
-        which python
-        python -m pip list
 
     - name: Check inactive issues
       env:
