@@ -1,0 +1,36 @@
+name: Artifact Demo
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate output file
+        run: echo "Hello from GitHub Actions!" > output.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-artifact
+          path: output.txt
+          retention-days: 5  # Optional: Store for 5 days
+
+  retrieve:
+    runs-on: ubuntu-latest
+    needs: build  # Ensures this job runs after 'build'
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: output-artifact
+          path: downloaded_artifact  # Save to this directory
+
+      - name: Display artifact content
+        run: cat downloaded_artifact/output.txt
