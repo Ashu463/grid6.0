@@ -25,11 +25,6 @@ jobs:
           app-id: ${{ secrets.TEST_GITHUB_APP_ID }}
           private-key: ${{ secrets.TEST_GITHUB_APP_PRIVATE_KEY }}
 
-      # ⚠️ Optional: Debugging token output — REMOVE after testing
-      - name: Print generated GitHub App token
-        run: |
-            echo "Token: ${{ steps.generate_github_app_token.outputs.token }}"
-
       - name: Install dependencies
         working-directory: backend/api-inventory
         run: npm install
