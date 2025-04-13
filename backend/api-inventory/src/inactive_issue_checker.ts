@@ -129,7 +129,7 @@ class GitHubService {
     this.repo_owner = repo_owner;
     this.repo_name = repo_name;
     this.rest_headers = {
-      Authorization: `token ${token}`,
+      Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github.v3+json',
     };
     this.graphql_headers = {
