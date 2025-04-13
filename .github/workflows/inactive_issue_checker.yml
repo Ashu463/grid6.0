@@ -43,4 +43,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate_github_app_token.outputs.token }}
           DEASSIGN_INACTIVE_CONTRIBUTORS: ${{ secrets.DEASSIGN_INACTIVE_CONTRIBUTORS }}
-        run: node --loader ts-node/esm src/inactive_issue_checker.ts
+        run: npx ts-node src/inactive_issue_checker.ts
