@@ -1,7 +1,9 @@
 name: Test Inactive Issue Script
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - master
 
 jobs:
   run-inactive-issue-script:
