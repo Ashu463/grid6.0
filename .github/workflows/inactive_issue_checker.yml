@@ -1,12 +1,8 @@
 name: Inactive Issue Script Test
 
 on:
-  workflow_dispatch:
-  push:
-    paths:
-      - 'backend/api-inventory/src/inactive_issue_checker.ts'
-      - '.github/workflows/inactive_issue_checker.yml'
-    branches:
+    push:
+      branches:
         - master
 
 jobs:
