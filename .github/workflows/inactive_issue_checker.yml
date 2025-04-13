@@ -1,0 +1,41 @@
+name: Inactive Issue Script Test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'backend/api-inventory/src/inactive_issue_checker.ts'
+      - '.github/workflows/inactive_issue_checker.yml'
+    branches:
+        - master
+
+jobs:
+  inactive-issue-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Generate GitHub App Token
+      id: generate_github_app_token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ secrets.TEST_GITHUB_APP_ID }}
+        private-key: ${{ secrets.TEST_GITHUB_APP_PRIVATE_KEY }}
+
+    - name: Install dependencies
+      working-directory: backend/api-inventory
+      run: npm install
+
+    - name: Run Inactive Issue Checker Script
+      working-directory: backend/api-inventory
+      env:
+        GITHUB_TOKEN: ${{ steps.generate_github_app_token.outputs.token }}
+        DEASSIGN_INACTIVE_CONTRIBUTORS: ${{ secrets.DEASSIGN_INACTIVE_CONTRIBUTORS }}
+      run: node src/inactive_issue_checker.ts
