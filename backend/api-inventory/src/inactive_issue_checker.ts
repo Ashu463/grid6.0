@@ -140,7 +140,8 @@ class GitHubService {
   }
 
   async getOpenIssues(): Promise<Issue[]> {
-    const url = `${this.base_url}/issues?state=open`;
+    const search_url = 'https://api.github.com/search/issues';
+    const url = `${search_url}?q=repo:${this.repo_owner}/${this.repo_name}+is:issue+state:open`;
 
     const response = await axios.get(url, { headers: this.rest_headers });
     if (!response) {
@@ -148,7 +149,9 @@ class GitHubService {
     }
 
     const issues_list: Issue[] = [];
-    for (const issue_data of response.data) {
+
+    // Search API returns issues in the 'items' array
+    for (const issue_data of response.data.items) {
       const typed_issue_data: IssueData = {
         number: issue_data.number,
         assignee: issue_data.assignee,
