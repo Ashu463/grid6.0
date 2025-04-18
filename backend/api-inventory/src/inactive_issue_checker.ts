@@ -149,7 +149,7 @@ class GitHubService {
     }
 
     const issues_list: Issue[] = [];
-
+    console.log(response, ' is the response');
     // Search API returns issues in the 'items' array
     for (const issue_data of response.data.items) {
       const typed_issue_data: IssueData = {
