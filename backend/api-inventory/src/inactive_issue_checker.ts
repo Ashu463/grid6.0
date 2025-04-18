@@ -142,26 +142,41 @@ class GitHubService {
   async getOpenIssues(): Promise<Issue[]> {
     const search_url = 'https://api.github.com/search/issues';
     const url = `${search_url}?q=repo:${this.repo_owner}/${this.repo_name}+is:issue+state:open`;
-
-    const response = await axios.get(url, { headers: this.rest_headers });
-    if (!response) {
-      throw new Error('Received null response while fetching issues');
+    try {
+      const response = await axios.get(url, { headers: this.rest_headers });
+      if (!response) {
+        throw new Error('Received null response while fetching issues');
+      }
+      // Add logging to see the actual structure
+      console.log(
+        'Response structure:',
+        JSON.stringify(response.data).substring(0, 200) + '...',
+      );
+      const issues_list: Issue[] = [];
+      // Check if the response has the items property
+      if (
+        !response.data ||
+        !response.data.items ||
+        !Array.isArray(response.data.items)
+      ) {
+        console.error('Unexpected response format:', response.data);
+        return [];
+      }
+      // Process each item in the items array
+      for (const issue_data of response.data.items) {
+        const typed_issue_data: IssueData = {
+          number: issue_data.number,
+          assignee: issue_data.assignee,
+          events_url: issue_data.events_url,
+        };
+        const issue = Issue.fromGithubData(typed_issue_data);
+        issues_list.push(issue);
+      }
+      return issues_list;
+    } catch (error) {
+      console.error('Error fetching open issues:', error);
+      throw error;
     }
-
-    const issues_list: Issue[] = [];
-    console.log(response, ' is the response');
-    // Search API returns issues in the 'items' array
-    for (const issue_data of response.data.items) {
-      const typed_issue_data: IssueData = {
-        number: issue_data.number,
-        assignee: issue_data.assignee,
-        events_url: issue_data.events_url,
-      };
-      const issue = Issue.fromGithubData(typed_issue_data);
-      issues_list.push(issue);
-    }
-
-    return issues_list;
   }
 
   async getRepoCollaborators(): Promise<Set<string>> {
