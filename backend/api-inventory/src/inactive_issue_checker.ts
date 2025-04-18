@@ -136,7 +136,7 @@ class GitHubService {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
-    this.base_url = `https://api.github.com/repos/${repo_owner}/${repo_name}`;
+    this.base_url = `{search_url}?q=repo:${repo_owner}/${repo_name}+is:issue+state:open`;
   }
 
   async getOpenIssues(): Promise<Issue[]> {
