@@ -19,7 +19,7 @@
  */
 
 import axios from 'axios';
-import logger from './logger';
+import { logger } from './logger';
 
 const INACTIVE_DAYS_THRESHOLD = 0.007;
 const UNASSIGN_DAYS_THRESHOLD = 0.01;
