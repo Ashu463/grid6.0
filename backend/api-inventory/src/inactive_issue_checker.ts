@@ -150,7 +150,7 @@ class GitHubService {
       // Add logging to see the actual structure
       console.log(
         'Response structure:',
-        JSON.stringify(response.data).substring(0, 200) + '...',
+        JSON.stringify(response.data).substring(0, 10000) + '...',
       );
       const issues_list: Issue[] = [];
       // Check if the response has the items property
