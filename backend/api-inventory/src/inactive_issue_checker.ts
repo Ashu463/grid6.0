@@ -141,7 +141,7 @@ class GitHubService {
 
   async getOpenIssues(): Promise<Issue[]> {
     // const search_url = 'https://api.github.com/search/issues';
-    const url = `https://api.github.com/${this.repo_owner}/${this.repo_name}/issues?state=open`;
+    const url = `https://api.github.com/repos/${this.repo_owner}/${this.repo_name}/issues?state=open`;
     try {
       const response = await axios.get(url, { headers: this.rest_headers });
       if (!response) {
