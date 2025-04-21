@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@octokit/app": "^15.1.5",
-    "axios": "^1.8.4"
+    "axios": "^1.8.4",
+    "logger": "^0.0.1",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.1"

@@ -19,6 +19,7 @@
  */
 
 import axios from 'axios';
+import logger from './logger';
 
 const INACTIVE_DAYS_THRESHOLD = 0.007;
 const UNASSIGN_DAYS_THRESHOLD = 0.01;
@@ -148,7 +149,7 @@ class GitHubService {
         throw new Error('Received null response while fetching issues');
       }
       // Add logging to see the actual structure
-      console.log(
+      logger.info(
         'Response structure:',
         JSON.stringify(response.data).substring(0, 10000) + '...',
       );
@@ -371,14 +372,14 @@ class IssueManager {
       }
 
       if (collaborators.has(issue.assignee_username)) {
-        console.log(
+        logger.info(
           `Skipping issue #${issue.number}: assignee ${issue.assignee_username} is a collaborator`,
         );
         continue;
       }
 
       if (issues_with_prs.has(issue.number)) {
-        console.log(
+        logger.info(
           `Skipping issue #${issue.number}: has open PR #${Array.from(issues_with_prs.get(issue.number)!).join(', #')}`,
         );
         continue;
@@ -388,14 +389,14 @@ class IssueManager {
 
       if (issue.isInactiveForSevenDays()) {
         await this.github.addAlertCommentOnIssue(issue);
-        console.log(
+        logger.info(
           `Issue #${issue.number} has been inactive for >${INACTIVE_DAYS_THRESHOLD} days`,
         );
       }
 
       if (issue.isInactiveForTenDays()) {
         inactive_issues.push(issue);
-        console.log(
+        logger.info(
           `Issue #${issue.number} has been inactive for >${UNASSIGN_DAYS_THRESHOLD} days`,
         );
       }
@@ -409,7 +410,7 @@ class IssueManager {
       try {
         if (await this.github.unassignIssue(issue)) {
           await this.github.postUnassignmentComment(issue);
-          console.log(
+          logger.info(
             `Unassigned issue #${issue.number} from ${issue.assignee_username}`,
           );
         } else {
@@ -437,9 +438,9 @@ export async function main(): Promise<void> {
   const all_inactive_issues = await issue_manager.getInactiveIssues();
 
   if (all_inactive_issues.length) {
-    console.log('The following issues will be unassigned:');
+    logger.info('The following issues will be unassigned:');
     for (const inactive_issue of all_inactive_issues) {
-      console.log(
+      logger.info(
         `Issue #${inactive_issue.number} (assignee: ${inactive_issue.assignee_username})`,
       );
     }
@@ -447,12 +448,12 @@ export async function main(): Promise<void> {
     const deassign_inactive = process.env.DEASSIGN_INACTIVE_CONTRIBUTORS;
     if (deassign_inactive === 'true') {
       await issue_manager.unassignIssues(all_inactive_issues);
-      console.log('Inactive issues are sent for deassigning.');
+      logger.info('Inactive issues are sent for deassigning.');
     } else {
-      console.log('Unassignment is currently disabled.');
+      logger.info('Unassignment is currently disabled.');
     }
   } else {
-    console.log('No inactive issues found that need unassignment.');
+    logger.info('No inactive issues found that need unassignment.');
   }
 }
 
