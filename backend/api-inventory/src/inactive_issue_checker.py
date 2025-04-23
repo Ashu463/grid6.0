@@ -31,7 +31,7 @@ UNASSIGN_DAYS_THRESHOLD = 10
 REPO_OWNER = 'Ashu463'
 REPO_NAME = 'grid6.0'
 
-
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 class IssueDict(TypedDict, total=False):
     """Dict representation of a GitHub issue."""
 
