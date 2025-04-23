@@ -22,7 +22,6 @@ import collections
 import datetime
 import logging
 import os
-from scripts import install_third_party_libs
 
 import requests
 from typing import Dict, List, Optional, Set, TypedDict
@@ -507,5 +506,4 @@ if __name__ == '__main__': # pragma: no cover
     # This installs third party libraries (requests) before
     # importing other files or importing libraries that use
     # the builtins python module (e.g. build, utils).
-    install_third_party_libs.main()
     main()
