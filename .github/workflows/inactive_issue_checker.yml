@@ -31,18 +31,6 @@ jobs:
           app-id: ${{ secrets.TEST_GITHUB_APP_ID }}
           private-key: ${{ secrets.TEST_GITHUB_APP_PRIVATE_KEY }}
 
-      - name: Setup logging for inactive_issue_checker.py
-        run: |
-          mkdir -p scripts
-          cat > scripts/install_third_party_libs.py << 'EOF'
-          def main():
-              # Empty stub - already installed requests
-              pass
-          EOF
-          
-          # Create directory for the inactive_issue_checker.py script
-          cp inactive_issue_checker.py scripts/
-
       - name: Run inactive issue checker script
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
