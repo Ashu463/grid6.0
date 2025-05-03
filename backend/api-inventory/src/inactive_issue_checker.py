@@ -428,13 +428,12 @@ class IssueManager:
                 continue
 
             issue.last_active_date = self.github.get_issue_events(issue)
-            logging.info('%s is the issue dict', issue)
+
             if issue.is_inactive_for_seven_days():
                 self.github.add_alert_comment_on_issue(issue)
-                print(issue.number, ' is the issue number')
                 logging.info(
-                    'Issue #%d has been inactive for >%d days',
-                    issue.number, INACTIVE_DAYS_THRESHOLD
+                    'Issue #%d has been inactive for >%d days. Metadata: %s',
+                    issue.number, INACTIVE_DAYS_THRESHOLD, issue.metadata
                 )
 
             if issue.is_inactive_for_ten_days():
