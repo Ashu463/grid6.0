@@ -410,6 +410,7 @@ class IssueManager:
 
         inactive_issues = []
         for issue in issues:
+            print(issue, ' is the iterated issue')
             if not issue.assignee_username:
                 continue
 
@@ -432,8 +433,8 @@ class IssueManager:
             if issue.is_inactive_for_seven_days():
                 self.github.add_alert_comment_on_issue(issue)
                 logging.info(
-                    'Issue #%d has been inactive for >%d days. Metadata: %s',
-                    issue.number, INACTIVE_DAYS_THRESHOLD, issue.metadata
+                    'Issue #%d has been inactive for >%d days.',
+                    issue.number, INACTIVE_DAYS_THRESHOLD
                 )
 
             if issue.is_inactive_for_ten_days():
