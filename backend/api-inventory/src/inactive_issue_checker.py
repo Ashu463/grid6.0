@@ -31,7 +31,12 @@ UNASSIGN_DAYS_THRESHOLD = 10
 REPO_OWNER = 'Ashu463'
 REPO_NAME = 'grid6.0'
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+
 class IssueDict(TypedDict, total=False):
     """Dict representation of a GitHub issue."""
 
@@ -141,7 +146,6 @@ class GitHubService:
             f'{search_url}?q=repo:{self.repo_owner}/'
             f'{self.repo_name}+is:issue+state:open'
         )
-        print(url, 'is the url')
         response = requests.get(url, headers=self.rest_headers, timeout=10)
         if response is None:
             raise AssertionError('Received null res while fetching issues')
@@ -410,7 +414,6 @@ class IssueManager:
 
         inactive_issues = []
         for issue in issues:
-            print(issue, ' is the iterated issue')
             if not issue.assignee_username:
                 continue
 
@@ -433,7 +436,7 @@ class IssueManager:
             if issue.is_inactive_for_seven_days():
                 self.github.add_alert_comment_on_issue(issue)
                 logging.info(
-                    'Issue #%d has been inactive for >%d days.',
+                    'Issue #%d has been inactive for >%d days',
                     issue.number, INACTIVE_DAYS_THRESHOLD
                 )
 
