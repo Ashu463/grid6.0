@@ -62,3 +62,30 @@ api-security-shield/
 git clone https://github.com/<your-username>/api-security-shield.git
 cd api-security-shield
 
+### 2. Setup Environment Variables
+
+Create .env in backend:
+
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+PORT=9000
+
+### 3. Install Dependencies 
+
+```bash
+cd backend && npm install
+cd ../dashboard && npm install
+
+### 4. Run with Docker
+
+```bash
+docker-compose up --build
+
+
+### Future Improvements
+1. Implement live/real time vulnerability data feed from OWASP ZAP.
+
+2. Add JWT authentication & RBAC.
+
+3. Integrate Web Application Firewall (WAF) layer.
+
+4. Extend dashboard with historical vulnerability trends.
