@@ -1,95 +1,75 @@
-# API Security Shield 🔐
+# API Security Shield  
 
-A security-focused backend system built as a **demo e-commerce API** and hardened against the **OWASP Top 10 API Security Risks**.  
-Implements **multi-layered protection** covering application, network, and cloud security — from **TypeScript type safety** to **AWS VPC isolation**, **Nginx reverse proxy with SSL/TLS**, and **rate limiting**.
-
----
-
-## 📌 Highlights
-- **Mitigated 15+ vulnerabilities** detected by OWASP ZAP.
-- Covers **all OWASP Top 10 API security risks** with layered defenses.
-- Deployed in **AWS VPC** using best practices for public/private subnet segregation.
-- Includes **interactive Next.js dashboard** for security visualization.
+A backend system designed to **demonstrate protection against the OWASP Top 10 API vulnerabilities**. Built for a demo e-commerce app, this project showcases best practices in **secure API development, cloud deployment, and monitoring**.  
 
 ---
 
-## 🚀 Features
-
-### **1. Application-Level Security**
-- **TypeScript strict typing** to enforce input formats.
-- **Class-validator** & sanitization to block malicious payloads.
-- **SQL injection prevention** by disallowing open-ended queries.
-- OWASP-compliant API design with security headers.
-
-### **2. Cloud & Network Security**
-- **AWS VPC** architecture:
-  - Backend in **public subnet**
-  - Database in **private subnet**
-  - Internet Gateway, **NACLs**, and **Security Groups** for access control.
-- **Nginx reverse proxy** with SSL/TLS to enforce HTTPS.
-- **Rate limiting** to mitigate brute-force & DoS attacks.
-
-### **3. Vulnerability Scanning & Monitoring**
-- Integrated **OWASP ZAP** for automated vulnerability scanning.
-- **Next.js dashboard** visualizing endpoint mitigation status.
-- Real-time logs with **AWS CloudWatch** *(demo data in current build)*.
+## Features  
+- **OWASP Top 10 Protection**: Hardened APIs against vulnerabilities like SQL Injection, Mass Assignment, BOLA, etc.  
+- **Strict Data Validation & Sanitization**: Enforced with **TypeScript** type safety and server-side checks.  
+- **Secure Cloud Deployment**:  
+  - **AWS VPC** architecture with public/private subnets  
+  - Security Groups & NACLs for layered access control  
+  - PostgreSQL in private subnet  
+- **Traffic Security**: Configured **Nginx reverse proxy** with SSL/TLS to enforce HTTPS and **rate limiting** to mitigate brute-force/DoS attacks.  
+- **Continuous Vulnerability Testing**: Integrated **OWASP ZAP** for scanning; identified & mitigated 15+ vulnerabilities.  
+- **Monitoring Dashboard**: Built with **Next.js** to visualize endpoint security status and metrics (demo data from ZAP & CloudWatch).  
 
 ---
 
-## 🛠 Tech Stack
-**Backend:** NestJS, Prisma ORM, PostgreSQL  
-**Frontend Dashboard:** Next.js, Tailwind CSS  
-**Security Tools:** OWASP ZAP, Nginx  
-**Cloud:** AWS (VPC, EC2, RDS, CloudWatch)  
-**DevOps:** Docker, GitHub Actions
+## Tech Stack  
+- **Backend**: NestJS (TypeScript), Prisma ORM, PostgreSQL  
+- **Frontend**: Next.js (dashboard)  
+- **Security**: OWASP ZAP, Nginx (SSL/TLS, rate limiting)  
+- **Cloud**: AWS (EC2, VPC, Security Groups, NACLs, CloudWatch)  
+- **Containerization**: Docker  
 
 ---
 
-## 📂 File Structure
-api-security-shield/
-├── backend/ # NestJS backend application
-├── dashboard/ # Next.js dashboard for vulnerability visualization
-├── docker-compose.yml
-└── README.md
+## Getting Started  
 
+### Prerequisites  
+- Node.js v18+  
+- Docker & Docker Compose  
+- PostgreSQL  
 
----
-
-## ⚡ Getting Started
-
-### 1. Clone Repository
+### Installation  
 ```bash
-git clone https://github.com/<your-username>/api-security-shield.git
+# Clone repo
+git clone https://github.com/Ashu463/api-security-shield.git
 cd api-security-shield
+
+# Install backend deps
+cd backend
+npm install
+
+# Run migrations
+npx prisma migrate dev
+
+# Start backend
+npm run start:dev
 ```
 
-### 2. Setup Environment Variables
-
-Create .env in backend:
-
-```bash
-DATABASE_URL=postgresql://user:password@host:5432/dbname
-PORT=9000
-```
-
-### 3. Install Dependencies 
-
-```bash
-cd backend && npm install
-cd ../dashboard && npm install
-```
-
-### 4. Run with Docker
-
+### Running with Docker  
 ```bash
 docker-compose up --build
 ```
 
-### Future Improvements
-1. Implement live/real time vulnerability data feed from OWASP ZAP.
+---
 
-2. Add JWT authentication & RBAC.
+## Security Highlights  
+- **Prevention**: SQL Injection, Broken Object Level Authorization, Sensitive Data Exposure  
+- **Cloud Hardening**: Isolated DB in private subnet, controlled ingress/egress  
+- **Defense in Depth**: Reverse proxy, HTTPS everywhere, input sanitization, rate limiting  
 
-3. Integrate Web Application Firewall (WAF) layer.
+---
 
-4. Extend dashboard with historical vulnerability trends.
+## Future Improvements  
+- Real-time integration of ZAP scan results into the Next.js dashboard  
+- CI/CD security testing pipeline (GitHub Actions + ZAP baseline scan)  
+- Multi-user role-based access control (RBAC)  
+
+---
+
+## Acknowledgements  
+Inspired by the **OWASP Top 10 API Security Risks** and real-world enterprise security practices.  
