@@ -1,31 +1,147 @@
-version: '3.8'
+version: '3.9'
+
+# ──────────────────────────────────────────────
+#  API Security Shield — Full Stack Compose
+#  Run: docker compose up --build
+#  EC2 tip: expose port 8080 (gateway) in security group
+# ──────────────────────────────────────────────
 
 services:
-  # Service for the NestJS application
-  app:
-    build: .
+  # ── PostgreSQL database ──────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: api_shield_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shield}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shield_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-api_shield}
     ports:
-      - "9000:9000" # Maps port 3000 on the host to port 3000 in the container
-    environment:
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
-    depends_on:
-      - db # Ensures the database is up before the NestJS application starts
-
-  # Service for the PostgreSQL database
-  db:
-    image: postgres:14-alpine # Uses the official PostgreSQL image with version 14-alpine
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      - '5432:5432'
     volumes:
-      - db_data:/var/lib/postgresql/data # Persists the database data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-shield}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shield_net
 
-# Define a named volume for the database
+  # ── Redis (session / cache layer) ───────────
+  redis:
+    image: redis:7-alpine
+    container_name: api_shield_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - shield_net
+
+  # ── Main NestJS monolith (all services) ─────
+  backend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: api_shield_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 9000
+
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-shield}:${POSTGRES_PASSWORD:-shield_secret}@postgres:5432/${POSTGRES_DB:-api_shield}
+
+      # Redis
+      REDIS_URL: redis://redis:6379
+
+      # Auth / JWT
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+
+      # Google OAuth (optional)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:8080/gateway/auth/google/callback}
+
+      # Payment gateway keys (Stripe / Razorpay / etc.)
+      PAYMENT_SECRET_KEY: ${PAYMENT_SECRET_KEY:-}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-stripe}
+    ports:
+      - '9000:9000'        # exposed for direct debug; keep closed on prod EC2
+    networks:
+      - shield_net
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:9000/ || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── API Gateway (NestJS) ─────────────────────
+  gateway:
+    build:
+      context: ./       # same codebase; gateway is a module inside it
+      dockerfile: Dockerfile.gateway
+    container_name: api_shield_gateway
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      GATEWAY_PORT: 8080
+
+      # Points to the backend container on the internal docker network
+      SERVICE_BASE_URL: http://backend:9000
+
+      # Session TTL in seconds (used by in-memory SessionService; swap for Redis later)
+      SESSION_TTL: ${SESSION_TTL:-86400}
+
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+    ports:
+      - '8080:8080'             # ← only this port needs to be open on EC2
+    networks:
+      - shield_net
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:8080/gateway/products || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Swagger UI (optional, disable on prod) ──
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: api_shield_swagger
+    restart: unless-stopped
+    environment:
+      URL: http://localhost:8080/api-docs-json   # gateway Swagger JSON endpoint
+      PORT: 8090
+    ports:
+      - '8090:8090'
+    depends_on:
+      - gateway
+    networks:
+      - shield_net
+    profiles:
+      - dev                   # only starts with: docker compose --profile dev up
+
+# ── Named volumes ────────────────────────────
 volumes:
-  db_data:
+  postgres_data:
 
+# ── Internal network ─────────────────────────
+networks:
+  shield_net:
+    driver: bridge

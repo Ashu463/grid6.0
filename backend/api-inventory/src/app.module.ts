@@ -13,9 +13,10 @@ import { CartModule } from './cart-management/cm.module';
 import { OrderModule } from './order-management/om.module';
 import { SmModule } from './shipping-management/sm.module';
 import { PayModule } from './payment-processing/pay.module';
+import { GatewayModule } from './APIGateway/gateway.module';
 
 @Module({
-  imports: [PmModule, UserModule, CartModule, OrderModule, SmModule, PayModule, CategoriesModule, ReviewModule],
+  imports: [PmModule, UserModule, CartModule, OrderModule, SmModule, PayModule, CategoriesModule, ReviewModule, GatewayModule],
 
   controllers: [AppController],
   providers: [AppService, PrismaService],

@@ -2,7 +2,7 @@ import { Controller, Post, Get, Body, Param, Delete, Put, Headers } from '@nestj
 import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { AddItemToCartDto, CreateCartDto, getCartDTO, UpdateCartItemDto } from 'src/dto/cm.dto';
 import { CartService } from './cm.service';
-import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
+import { UniversalResponseDTO } from '../dto/universal.response.dto';
 
 @ApiTags('Cart Management')
 @Controller('cart')

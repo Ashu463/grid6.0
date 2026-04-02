@@ -1,6 +1,6 @@
 // src/order/order.service.ts
 
-import { Injectable, BadRequestException, NotFoundException, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { CreateOrderDto, UpdateOrderStatusDto } from 'src/dto/om.dto';
@@ -68,6 +68,9 @@ export class OrderService {
 
     const order = await this.prismaService.order.findUnique({ where: { id: orderId } });
 
+    if (order.userId !== orderId) {
+      throw new ForbiddenException();
+    }
     if (!order) {
       throw new NotFoundException({
         success : false,

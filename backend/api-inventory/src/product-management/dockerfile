@@ -1,0 +1,23 @@
+# Use lightweight Node image
+FROM node:18-alpine
+
+# Create app directory
+WORKDIR /app
+
+# Copy package files first (better caching)
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy rest of the code
+COPY . .
+
+# Build NestJS app
+RUN npm run build
+
+# Expose port
+EXPOSE 9000
+
+# Run the app
+CMD ["npm", "run", "start:prod"]

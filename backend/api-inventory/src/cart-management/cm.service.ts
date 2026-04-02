@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException, BadGatewayException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'crypto';
-import { AddItemToCartDto, CreateCartDto, getCartDTO, UpdateCartItemDto } from 'src/dto/cm.dto';
+import { AddItemToCartDto, CreateCartDto, getCartDTO, UpdateCartItemDto } from '../dto/cm.dto';
 import { validateOrReject } from 'class-validator';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
