@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as fs from 'fs';
 import { ValidationPipe } from '@nestjs/common';
+import { rateLimitMiddleware } from './utils/rate-limit.middleware';
 
 async function bootstrap() {
   
@@ -36,6 +37,7 @@ async function bootstrap() {
   fs.writeFileSync('./grid-BE-service.json', JSON.stringify(document, null, 2), {
     encoding: 'utf8',
   });
+  app.use(rateLimitMiddleware)
   await app.listen(9000, '0.0.0.0');
   console.log("backend application is running")
 

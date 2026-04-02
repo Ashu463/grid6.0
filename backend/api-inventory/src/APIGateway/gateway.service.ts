@@ -23,8 +23,12 @@ export class GatewayService {
   // INTERNAL HELPERS
   // ─────────────────────────────────────────────
 
-  private headers(token?: string) {
-    return token ? { 'jwt-token': token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  private headers(token?: string, userId?: string) {
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'jwt-token': token }),
+      ...(userId && { 'x-user-id': userId }),
+    };
   }
 
   private resolveSession(token?: string, userId?: string): string {
@@ -36,11 +40,12 @@ export class GatewayService {
     path: string,
     data?: any,
     token?: string,
+    userId?: string
   ): Promise<T> {
     const url = `${BASE_URL}${path}`;
     this.logger.log(`[GATEWAY] ${method.toUpperCase()} → ${url}`);
     try {
-      const config = { headers: this.headers(token) };
+      const config = { headers: this.headers(token, userId) };
       let response$: Observable<AxiosResponse<T>>;
       if (method === 'get') response$ = this.http.get<T>(url, config);
       else if (method === 'post') response$ = this.http.post<T>(url, data, config);
