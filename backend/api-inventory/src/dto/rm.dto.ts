@@ -1,6 +1,6 @@
 // src/dto/review.dto.ts
 import { IsString } from 'class-validator';
-import { DoesNotEndWithHyphen } from 'src/utils/hyphen';
+import { DoesNotEndWithHyphen } from '@src/utils/hyphen';
 
 export class CreateReviewDto {
   rating: number;

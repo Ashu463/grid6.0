@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
-import { DoesNotEndWithHyphen } from 'src/utils/hyphen';
+import { DoesNotEndWithHyphen } from '@src/utils/hyphen';
 
 export class CreateCategoryDto {
   @ApiProperty({ example: 'Electronics', description: 'The name of the category' })
