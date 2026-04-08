@@ -1,4 +1,4 @@
-import { BadGatewayException, BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto } from 'src/dto/cam.dto';
 import { randomUUID } from 'crypto';
@@ -6,154 +6,95 @@ import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @Injectable()
 export class CategoriesService {
-  private readonly logger : Logger
-  constructor(private prismaService: PrismaService) {this.logger = new Logger()}
-
-  async create( data: CreateCategoryDto): Promise<UniversalResponseDTO> {
-    if(!data){
-      throw new BadRequestException({
-        success : false, 
-        message : 'pls send complete data in right format'
-      })
+  private readonly logger: Logger;
+  constructor(private prismaService: PrismaService) {
+    this.logger = new Logger(CategoriesService.name);
+  }
+ 
+  async create(data: CreateCategoryDto): Promise<UniversalResponseDTO> {
+    if (!data) {
+      throw new BadRequestException({ success: false, message: 'Incomplete data' });
     }
     try {
-      
-      const res = await this.prismaService.category.create({ 
-        data : {
-          name : data.name,
-          description : data.description,
-          id : randomUUID(),
-          createdAt : new Date(),
-          updatedAt : new Date()          
-        }
-       })
-      if(!res){
-        throw new BadGatewayException({
-          success : false, 
-          message : 'error occured while creating a category'
-        })
-      }
-      return {
-        success : true,
-        message : 'category created successfully',
-        data : res
-      }
-    }catch(error){
-      this.logger.log(error)
-      throw new InternalServerErrorException({
-        success : false,
-        message : 'internal server error'
-      })
+      const res = await this.prismaService.category.create({
+        data: {
+          id: randomUUID(),
+          name: data.name,
+          description: data.description,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+      return { success: true, message: 'Category created successfully', data: res };
+    } catch (error) {
+      // A05 — never leak raw DB error to the client
+      this.logger.error('Category create failed', error);
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
   }
-
+ 
   async findAll(): Promise<UniversalResponseDTO> {
     try {
-      const res = await this.prismaService.category.findMany()
-      if(!res){
-        throw new BadGatewayException({
-          success : false, 
-          message : 'error occured while finding categories'
-        })
-      }
-      return {
-        success : true,
-        message : 'category found successfully',
-        data : res
-      }
-    }catch(error){
-      this.logger.log(error)
-      throw new InternalServerErrorException({
-        success : false,
-        message : 'internal server error'
-      })
+      // findMany always returns an array (never null) — no !res check needed
+      const res = await this.prismaService.category.findMany();
+      return { success: true, message: 'Categories retrieved successfully', data: res };
+    } catch (error) {
+      this.logger.error('Category findAll failed', error);
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
   }
-
+ 
   async findOne(id: string): Promise<UniversalResponseDTO> {
-    if(!id){
-      throw new BadRequestException({
-        success : false, 
-        message : 'pls send ID along with req'
-      })
+    if (!id) {
+      throw new BadRequestException({ success: false, message: 'ID is required' });
     }
     try {
-      const res = await this.prismaService.category.findUnique({where : {id}})
-      if(!res){
-        throw new BadGatewayException({
-          success : false, 
-          message : 'error occured while finding a category'
-        })
+      const res = await this.prismaService.category.findUnique({ where: { id } });
+      if (!res) {
+        throw new NotFoundException({ success: false, message: 'Category not found' });
       }
-      return {
-        success : true,
-        message : 'category found successfully',
-        data : res
-      }
-    }catch(error){
-      this.logger.log(error)
-      throw new InternalServerErrorException({
-        success : false,
-        message : 'internal server error'
-      })
+      return { success: true, message: 'Category found successfully', data: res };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Category findOne failed', error);
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
   }
-
+ 
   async update(id: string, data: UpdateCategoryDto): Promise<UniversalResponseDTO> {
-    if(!data || !id){
-      throw new BadRequestException({
-        success : false, 
-        message : 'pls send complete data and ID in right format with request'
-      })
+    if (!data || !id) {
+      throw new BadRequestException({ success: false, message: 'ID and data are required' });
     }
     try {
-      const res = await this.prismaService.category.update({where : {id}, data})
-      if(!res){
-        throw new BadGatewayException({
-          success : false, 
-          message : 'error occured while updating a category'
-        })
+      // A04 — verify existence before mutating
+      const existing = await this.prismaService.category.findUnique({ where: { id } });
+      if (!existing) {
+        throw new NotFoundException({ success: false, message: 'Category not found' });
       }
-      return {
-        success : true,
-        message : 'category updated successfully',
-        data : res
-      }
-    }catch(error){
-      this.logger.log(error)
-      throw new InternalServerErrorException({
-        success : false,
-        message : 'internal server error'
-      })
+      const res = await this.prismaService.category.update({ where: { id }, data });
+      return { success: true, message: 'Category updated successfully', data: res };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Category update failed', error);
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
   }
-
-  async remove(id: string): Promise<UniversalResponseDTO>{
-    if(!id){
-      throw new BadRequestException({
-        success : false, 
-        message : 'pls send complete data in right format'
-      })
+ 
+  async remove(id: string): Promise<UniversalResponseDTO> {
+    if (!id) {
+      throw new BadRequestException({ success: false, message: 'ID is required' });
     }
     try {
-      const res = await this.prismaService.category.delete({where : {id}})
-      if(!res){
-        throw new BadGatewayException({
-          success : false, 
-          message : 'error occured while deleting a category'
-        })
+      const existing = await this.prismaService.category.findUnique({ where: { id } });
+      if (!existing) {
+        throw new NotFoundException({ success: false, message: 'Category not found' });
       }
-      return {
-        success : true,
-        message : 'category deleted successfully',
-        data : res
-      }
-    }catch(error){
-      this.logger.log(error)
-      throw new InternalServerErrorException({
-        success : false,
-        message : 'internal server error'
-      })
+      const res = await this.prismaService.category.delete({ where: { id } });
+      return { success: true, message: 'Category deleted successfully', data: res };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Category remove failed', error);
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
   }
 }

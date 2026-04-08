@@ -1,146 +1,94 @@
 // src/review-management/review.service.ts
 
-import { BadGatewayException, BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from 'src/dto/rm.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
 @Injectable()
 export class ReviewService {
-  private readonly logger: Logger
-  constructor(private readonly prismaService: PrismaService) { this.logger = new Logger() }
-
-  async createReview(createReviewDto: CreateReviewDto): Promise<UniversalResponseDTO> {
+  private readonly logger: Logger;
+  constructor(private readonly prismaService: PrismaService) {
+    this.logger = new Logger(ReviewService.name);
+  }
+ 
+  async createReview(
+    createReviewDto: CreateReviewDto,
+    requestingUserId: string,
+  ): Promise<UniversalResponseDTO> {
     if (!createReviewDto) {
-      throw new BadRequestException({
-        success: false,
-        message: 'Please send the data along with the request'
-      })
+      throw new BadRequestException({ success: false, message: 'Review data is required' });
     }
-    // Validate if the product exists before creating a review
+ 
+    // Product existence check is outside try/catch so NotFoundException propagates correctly
     const product = await this.prismaService.product.findUnique({
       where: { id: createReviewDto.productId },
     });
-
+ 
     if (!product) {
-      throw new BadRequestException({
-        success: false,
-        message: 'Invalid product ID. Product does not exist.',
-      });
+      throw new NotFoundException({ success: false, message: 'Product not found' });
     }
-
+ 
     try {
-      // Create the review
       const review = await this.prismaService.review.create({
         data: {
           rating: createReviewDto.rating,
           comment: createReviewDto.comment,
           productId: createReviewDto.productId,
+          userId: requestingUserId,  // A01 — bind to authenticated user
         },
       });
-      if (!review) {
-        throw new BadGatewayException({
-          success: false,
-          message: 'Send correct parameters. Review not created'
-        })
-      }
-
-      return {
-        success: true,
-        message: 'Review submitted successfully',
-        data: review,
-      };
-
+      return { success: true, message: 'Review submitted successfully', data: review };
     } catch (error) {
-      this.logger.log(error)
-      throw new BadGatewayException({
-        success: false,
-        message: 'error occured while accessing the product'
-      })
+      this.logger.error('Review create failed', error);
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
-
-
   }
-
+ 
   async getReviewsByProduct(productId: string): Promise<UniversalResponseDTO> {
     if (!productId) {
-      throw new BadRequestException({
-        success: false,
-        message: 'Please send the product id along with the request'
-      })
+      throw new BadRequestException({ success: false, message: 'Product ID is required' });
     }
-    // Validate if the product exists before fetching reviews
-    const product = await this.prismaService.product.findUnique({
-      where: { id: productId },
-    });
-
+ 
+    const product = await this.prismaService.product.findUnique({ where: { id: productId } });
     if (!product) {
-      throw new NotFoundException({
-        success: false,
-        message: 'Invalid product ID. Product does not exist.',
-      });
+      throw new NotFoundException({ success: false, message: 'Product not found' });
     }
-
-    try {
-      const reviews = await this.prismaService.review.findMany({
-        where: { productId },
-      });
-
-      if (!reviews.length) {
-        throw new NotFoundException({
-          success: false,
-          message: 'No reviews found for this product.',
-        });
-      }
-
-      return {
-        success: true,
-        message: 'Reviews retrieved successfully',
-        data: reviews,
-      };
-    } catch (error) {
-      this.logger.log(error)
-      throw new BadGatewayException({
-        success: false,
-        message: 'error occured while accessing the product'
-      })
+ 
+    // BUG FIX — NotFoundException was previously thrown inside the catch block,
+    // causing it to be swallowed and re-thrown as a misleading 502 BadGatewayException.
+    const reviews = await this.prismaService.review.findMany({ where: { productId } });
+ 
+    if (!reviews.length) {
+      throw new NotFoundException({ success: false, message: 'No reviews found for this product' });
     }
+ 
+    return { success: true, message: 'Reviews retrieved successfully', data: reviews };
   }
-
-  async deleteReview(reviewId: string): Promise<UniversalResponseDTO> {
+ 
+  async deleteReview(reviewId: string, requestingUserId: string): Promise<UniversalResponseDTO> {
     if (!reviewId) {
-      throw new BadRequestException({
-        success: false,
-        message: 'Please send the request id along with the request'
-      })
+      throw new BadRequestException({ success: false, message: 'Review ID is required' });
     }
+ 
+    const review = await this.prismaService.review.findUnique({ where: { id: reviewId } });
+ 
+    if (!review) {
+      throw new NotFoundException({ success: false, message: 'Review not found' });
+    }
+ 
+    // A01 — only the author can delete their own review
+    if (review.userId !== requestingUserId) {
+      // logSecurityEvent('REVIEW_DELETE_UNAUTHORIZED', { requestingUserId, reviewId });
+      throw new ForbiddenException({ success: false, message: 'Access denied' });
+    }
+ 
     try {
-      const review = await this.prismaService.review.findUnique({
-        where: { id: reviewId },
-      });
-
-      if (!review) {
-        throw new NotFoundException({
-          success: false,
-          message: 'Review not found.',
-        });
-      }
-
-      await this.prismaService.review.delete({
-        where: { id: reviewId },
-      });
-
-      return {
-        success: true,
-        message: 'Review deleted successfully',
-      };
+      await this.prismaService.review.delete({ where: { id: reviewId } });
+      return { success: true, message: 'Review deleted successfully' };
     } catch (error) {
-      this.logger.log(error)
-      throw new BadGatewayException({
-        success: false,
-        message: 'error occured while accessing the review of the product'
-      })
+      this.logger.error('Review delete failed', error);
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
-
   }
 }
