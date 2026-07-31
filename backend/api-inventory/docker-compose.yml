@@ -1,5 +1,3 @@
-version: '3.9'
-
 # ──────────────────────────────────────────────
 #  API Security Shield — Full Stack Compose
 #  Run: docker compose up --build
@@ -16,8 +14,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-shield}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shield_secret}
       POSTGRES_DB: ${POSTGRES_DB:-api_shield}
-    ports:
-      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -33,8 +29,6 @@ services:
     image: redis:7-alpine
     container_name: api_shield_redis
     restart: unless-stopped
-    ports:
-      - '6379:6379'
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -69,6 +63,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
 
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+
       # Google OAuth (optional)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
@@ -82,7 +79,7 @@ services:
     networks:
       - shield_net
     healthcheck:
-      test: ['CMD-SHELL', 'curl -f http://localhost:9000/ || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:9000/health || exit 1']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -105,10 +102,16 @@ services:
       # Points to the backend container on the internal docker network
       SERVICE_BASE_URL: http://backend:9000
 
+      # The gateway ships the same monolith image/AppModule as the backend
+      # (PrismaService is instantiated regardless of role), so it needs a
+      # reachable DATABASE_URL even though it never issues its own queries.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-shield}:${POSTGRES_PASSWORD:-shield_secret}@postgres:5432/${POSTGRES_DB:-api_shield}
+
       # Session TTL in seconds (used by in-memory SessionService; swap for Redis later)
       SESSION_TTL: ${SESSION_TTL:-86400}
 
       JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     ports:
       - '8080:8080'             # ← only this port needs to be open on EC2
     networks:

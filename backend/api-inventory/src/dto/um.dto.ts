@@ -17,11 +17,6 @@ export class RegisterUserDto {
   @DoesNotEndWithHyphen({ message: 'Password should not end with a hyphen.' })
   @ApiProperty({ description: 'The password for the new user' })
   password: string;
-
-  @IsString()
-  @DoesNotEndWithHyphen({ message: 'Secret Key should not end with a hyphen.' })
-  @ApiProperty({ description: 'The secret key associated with the new user' })
-  secretKey : string
 }
 
 export class LoginUserDto {
@@ -34,11 +29,6 @@ export class LoginUserDto {
   @DoesNotEndWithHyphen({ message: 'Password should not end with a hyphen.' })
   @ApiProperty({ description: 'The password of the user' })
   password: string;
-  
-  @IsString()
-  @DoesNotEndWithHyphen({ message: 'Secret Key should not end with a hyphen.' })
-  @ApiProperty({ description: 'The secret key associated with the new user' })
-  secretKey : string;
 }
 
 

@@ -33,6 +33,7 @@ export class OrderService {
           id: randomUUID(),
           userId: requestingUserId,  // A01 — always use the verified JWT userId
           items: createOrderDto.items,
+          totalAmount: createOrderDto.totalAmount,
           status: 'Order Placed',
           createdAt: new Date(),
           updatedAt: new Date(),

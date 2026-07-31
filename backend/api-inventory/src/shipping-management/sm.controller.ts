@@ -3,12 +3,14 @@ import { ApiOperation, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ShippingService } from './sm.service';
 import { EstimateShippingDto } from 'src/dto/sm.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Shipping Management')
 @Controller('shipping')
 export class ShippingController {
   constructor(private readonly shippingService: ShippingService) {}
 
+  @Public()
   @Get('methods')
   @ApiOperation({ summary: 'Get available shipping methods' })
   @ApiResponse({ status: 200, description: 'List of available shipping methods retrieved successfully.' })
@@ -17,6 +19,7 @@ export class ShippingController {
     return this.shippingService.getShippingMethods();
   }
 
+  @Public()
   @Post('estimate')
   @ApiOperation({ summary: 'Estimate shipping costs' })
   @ApiBody({ type: EstimateShippingDto, description: 'Data for estimating shipping costs' })

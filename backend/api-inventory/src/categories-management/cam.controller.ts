@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/s
 import { CategoriesService } from './cam.service';
 import { CreateCategoryDto, UpdateCategoryDto } from 'src/dto/cam.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Categories Management')
 @Controller('categories')
@@ -17,6 +18,7 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Get all categories' })
   @ApiResponse({ status: 200, description: 'Retrieved all categories.' })
@@ -24,6 +26,7 @@ export class CategoriesController {
     return this.categoriesService.findAll();
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get a category by ID' })
   @ApiResponse({ status: 200, description: 'Category retrieved successfully.' })

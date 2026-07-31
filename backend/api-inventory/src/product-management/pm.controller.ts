@@ -3,6 +3,7 @@ import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/s
 import { PmService } from './pm.service';
 import { Product } from 'src/dto/pm.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Products Management')
 @Controller('products')
@@ -18,6 +19,7 @@ export class PmController {
     return this.pmService.create(createProductDto);
   }
 
+  @Public()
   @Get('/')
   @ApiOperation({ summary: 'Retrieve all products' })
   @ApiResponse({ status: 200, description: 'List of all products retrieved successfully.' })
@@ -26,6 +28,7 @@ export class PmController {
     return this.pmService.findAllProducts();
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Retrieve a single product by ID' })
   @ApiParam({ name: 'id', description: 'The ID of the product to retrieve' })

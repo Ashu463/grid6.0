@@ -1,10 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException, Logger, InternalServerErrorException, BadGatewayException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger, InternalServerErrorException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto, RegisterUserDto, updatePasswordDTO, UpdateUserDto, UserResponseDto } from 'src/dto/um.dto';
-import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken';
 import { JwtService } from '@nestjs/jwt';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
 
@@ -184,8 +182,11 @@ export class UserService {
     }
  
     try {
-      const user = await this.prismaService.user.findUnique({ where: { email: data.email } });
- 
+      // BUG FIX — was looking the user up by data.email while writing to
+      // where: { id: userId }. If they disagreed, this validated one user's
+      // password and rewrote a different user's password hash.
+      const user = await this.prismaService.user.findUnique({ where: { id: userId } });
+
       const passwordValid = user
         ? await bcrypt.compare(data.oldPassword, user.password)
         : false;
@@ -229,44 +230,6 @@ export class UserService {
     } catch (error) {
       this.logger.error('deleteUser failed', error);
       throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
-    }
-  }
-
-  private toUserResponseDto(user: any): UserResponseDto {
-    return {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
-  }
-  private generateJWT(user, secretKey): any {
-    // Payload typically includes user information (like user ID)
-    const payload = {
-      email: user.email,
-    };
-    const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
-    return token;
-  }
-  private authenticateJWT(token, secretKey): any {
-
-    if (token && secretKey) {
-      jwt.verify(token, secretKey, (err, user) => {
-        if (err) {
-          this.logger.log(err)
-          throw new BadGatewayException({
-            success: false,
-            message: 'jwt not authenticated'
-          })
-        }
-        return true;
-      });
-    } else {
-      throw new BadGatewayException({
-        success: false,
-        message: 'pls send a valid jwt token and secret key along with request'
-      })
     }
   }
 }

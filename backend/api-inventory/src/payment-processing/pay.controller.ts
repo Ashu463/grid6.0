@@ -3,6 +3,7 @@ import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/s
 import { PaymentService } from './pay.service';
 import { CreatePaymentDto, RefundPaymentDto } from 'src/dto/pay.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Pyaments Processing Management')
 @Controller('payments')
@@ -14,8 +15,11 @@ export class PaymentController {
   @ApiBody({ type: CreatePaymentDto, description: 'Data for creating a new payment' })
   @ApiResponse({ status: 201, description: 'The payment has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async createPayment(@Body('data') createPaymentDto: CreatePaymentDto) : Promise<UniversalResponseDTO> {
-    return this.paymentService.createPayment(createPaymentDto);
+  async createPayment(
+    @Body('data') createPaymentDto: CreatePaymentDto,
+    @CurrentUser('sub') requestingUserId: string,
+  ) : Promise<UniversalResponseDTO> {
+    return this.paymentService.createPayment(createPaymentDto, requestingUserId);
   }
 
   @Get(':paymentId')
@@ -23,8 +27,11 @@ export class PaymentController {
   @ApiParam({ name: 'paymentId', description: 'The ID of the payment to retrieve' })
   @ApiResponse({ status: 200, description: 'The payment details have been successfully retrieved.' })
   @ApiResponse({ status: 404, description: 'Payment not found' })
-  async getPaymentDetails(@Param('paymentId') paymentId: string) : Promise<UniversalResponseDTO> {
-    return this.paymentService.getPaymentDetails(paymentId);
+  async getPaymentDetails(
+    @Param('paymentId') paymentId: string,
+    @CurrentUser('sub') requestingUserId: string,
+  ) : Promise<UniversalResponseDTO> {
+    return this.paymentService.getPaymentDetails(paymentId, requestingUserId);
   }
 
   @Post('refund')
@@ -32,8 +39,10 @@ export class PaymentController {
   @ApiBody({ type: RefundPaymentDto, description: 'Data for processing a refund' })
   @ApiResponse({ status: 201, description: 'The refund has been successfully processed.' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async processRefund(@Body('data') refundPaymentDto: RefundPaymentDto) : Promise<UniversalResponseDTO> {
-
-    return this.paymentService.processRefund(refundPaymentDto);
+  async processRefund(
+    @Body('data') refundPaymentDto: RefundPaymentDto,
+    @CurrentUser('sub') requestingUserId: string,
+  ) : Promise<UniversalResponseDTO> {
+    return this.paymentService.processRefund(refundPaymentDto, requestingUserId);
   }
 }

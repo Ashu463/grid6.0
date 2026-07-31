@@ -3,16 +3,21 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as fs from 'fs';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { rateLimitMiddleware } from './utils/rate-limit.middleware';
 
 async function bootstrap() {
-  
-  console.log(process.env.DATABASE_URL);
   const app = await NestFactory.create(AppModule);
+
+  app.use(helmet());
+
+  const corsOrigins = (process.env.CORS_ORIGINS ?? 'http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim());
   app.enableCors({
-    origin: ['https://ashuk.ddns.net','http://ashuk.ddns.net'],  
-    methods: 'GET,POST,PUT,DELETE',        
-    credentials: true,                    
+    origin: corsOrigins,
+    methods: 'GET,POST,PUT,DELETE',
+    credentials: true,
   });
 
   app.useGlobalPipes(
@@ -23,23 +28,24 @@ async function bootstrap() {
     }),
   );
 
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('API Security Shield')
+      .setDescription('Test out the demo APIs from following listed endpoints')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
 
-  const config = new DocumentBuilder()
-    .setTitle('API Security Shield')
-    .setDescription('Test out the demo APIs from following listed endpoints')
-    .setVersion('1.0')
-    .addBearerAuth() // If you have authentication
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+    fs.writeFileSync('./grid-BE-service.json', JSON.stringify(document, null, 2), {
+      encoding: 'utf8',
+    });
+  }
 
-  // Set up Swagger UI
-  SwaggerModule.setup('api', app, document);
-  fs.writeFileSync('./grid-BE-service.json', JSON.stringify(document, null, 2), {
-    encoding: 'utf8',
-  });
-  app.use(rateLimitMiddleware)
-  await app.listen(9000, '0.0.0.0');
-  console.log("backend application is running")
-
+  app.use(rateLimitMiddleware);
+  const port = process.env.PORT ?? 9000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`backend application is running on port ${port}`);
 }
 bootstrap();

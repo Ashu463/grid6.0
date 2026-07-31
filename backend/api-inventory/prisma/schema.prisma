@@ -11,6 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 model User {
   id        String     @id @default(uuid())
@@ -19,7 +20,6 @@ model User {
   email     String   @unique
   username  String
   password  String
-  secretKey String
 }
 model Product {
   id        String   @id 
@@ -113,6 +113,7 @@ model Review {
   rating    Int
   comment   String
   productId String
+  userId    String
   product   Product  @relation(fields: [productId], references: [id])
 
 }

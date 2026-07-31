@@ -18,6 +18,7 @@ import {
   ApiHeader,
 } from '@nestjs/swagger';
 import { GatewayService } from './gateway.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 /**
  * API GATEWAY CONTROLLER
@@ -46,6 +47,7 @@ export class GatewayController {
   // USER MANAGEMENT
   // ─────────────────────────────────────────────
 
+  @Public()
   @Post('auth/register')
   @ApiOperation({ summary: 'Register a new user (creates gateway session)' })
   @ApiBody({ description: 'Registration payload' })
@@ -54,6 +56,7 @@ export class GatewayController {
     return this.gatewayService.register(body);
   }
 
+  @Public()
   @Post('auth/login')
   @ApiOperation({ summary: 'Login (creates gateway session with token)' })
   @ApiBody({ description: 'Login credentials' })
@@ -108,12 +111,14 @@ export class GatewayController {
     return this.gatewayService.createProduct(body, token);
   }
 
+  @Public()
   @Get('products')
   @ApiOperation({ summary: 'Get all products' })
   getAllProducts(@Headers('jwt-token') token?: string) {
     return this.gatewayService.getAllProducts(token);
   }
 
+  @Public()
   @Get('products/:id')
   @ApiOperation({ summary: 'Get product by ID' })
   @ApiParam({ name: 'id', description: 'Product ID' })
@@ -145,12 +150,14 @@ export class GatewayController {
     return this.gatewayService.createCategory(body, token);
   }
 
+  @Public()
   @Get('categories')
   @ApiOperation({ summary: 'Get all categories' })
   getAllCategories(@Headers('jwt-token') token?: string) {
     return this.gatewayService.getAllCategories(token);
   }
 
+  @Public()
   @Get('categories/:id')
   @ApiOperation({ summary: 'Get category by ID' })
   @ApiParam({ name: 'id', description: 'Category ID' })
@@ -297,6 +304,7 @@ export class GatewayController {
   // SHIPPING  ← gated behind payment confirmation
   // ─────────────────────────────────────────────
 
+  @Public()
   @Get('shipping/methods')
   @ApiOperation({ summary: 'Get available shipping methods' })
   getShippingMethods(@Headers('jwt-token') token?: string) {
@@ -333,6 +341,7 @@ export class GatewayController {
     return this.gatewayService.createReview(productId, body, token);
   }
 
+  @Public()
   @Get('reviews/:productId')
   @ApiOperation({ summary: 'Get all reviews for a product' })
   @ApiParam({ name: 'productId', description: 'Product ID' })

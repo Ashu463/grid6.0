@@ -5,6 +5,8 @@ import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/s
 import { ReviewService } from './rm.service';
 import { CreateReviewDto } from 'src/dto/rm.dto';
 import { UniversalResponseDTO } from 'src/dto/universal.response.dto';
+import { Public } from '../auth/decorators/public.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Reviews Management')
 @Controller('reviews')
@@ -21,10 +23,12 @@ export class ReviewController {
   async createReview(
     @Param('productId') productId: string,
     @Body() createReviewDto: CreateReviewDto,
+    @CurrentUser('sub') requestingUserId: string,
   ): Promise<UniversalResponseDTO> {
-    return this.reviewService.createReview({ ...createReviewDto, productId });
+    return this.reviewService.createReview({ ...createReviewDto, productId }, requestingUserId);
   }
 
+  @Public()
   @Get(':productId')
   @ApiOperation({ summary: 'Get all reviews for a product' })
   @ApiParam({ name: 'productId', description: 'ID of the product' })
@@ -39,7 +43,10 @@ export class ReviewController {
   @ApiParam({ name: 'reviewId', description: 'ID of the review to delete' })
   @ApiResponse({ status: 200, description: 'Review deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Review not found.' })
-  async deleteReview(@Param('reviewId') reviewId: string): Promise<UniversalResponseDTO> {
-    return this.reviewService.deleteReview(reviewId);
+  async deleteReview(
+    @Param('reviewId') reviewId: string,
+    @CurrentUser('sub') requestingUserId: string,
+  ): Promise<UniversalResponseDTO> {
+    return this.reviewService.deleteReview(reviewId, requestingUserId);
   }
 }

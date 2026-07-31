@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -14,9 +15,22 @@ import { OrderModule } from './order-management/om.module';
 import { SmModule } from './shipping-management/sm.module';
 import { PayModule } from './payment-processing/pay.module';
 import { GatewayModule } from './APIGateway/gateway.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [PmModule, UserModule, CartModule, OrderModule, SmModule, PayModule, CategoriesModule, ReviewModule, GatewayModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    AuthModule,
+    PmModule,
+    UserModule,
+    CartModule,
+    OrderModule,
+    SmModule,
+    PayModule,
+    CategoriesModule,
+    ReviewModule,
+    GatewayModule,
+  ],
 
   controllers: [AppController],
   providers: [AppService, PrismaService],

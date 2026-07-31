@@ -1,8 +1,9 @@
-import { Controller, Post, Get, Body, Param, Delete, Put, Headers } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Delete, Put } from '@nestjs/common';
 import { ApiOperation, ApiBody, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { AddItemToCartDto, CreateCartDto, getCartDTO, UpdateCartItemDto } from 'src/dto/cm.dto';
 import { CartService } from './cm.service';
 import { UniversalResponseDTO } from '../dto/universal.response.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Cart Management')
 @Controller('cart')
@@ -23,8 +24,11 @@ export class CartController {
   @ApiBody({ description: 'User ID', type: String })
   @ApiResponse({ status: 200, description: 'The cart has been successfully retrieved.' })
   @ApiResponse({ status: 404, description: 'Cart not found' })
-  async getCart(@Body('data') data: getCartDTO): Promise<UniversalResponseDTO> {
-    return this.cartService.getCart(data);
+  async getCart(
+    @Body('data') data: getCartDTO,
+    @CurrentUser('sub') requestingUserId: string,
+  ): Promise<UniversalResponseDTO> {
+    return this.cartService.getCart(data, requestingUserId);
   }
 
   @Post('items')
@@ -32,8 +36,11 @@ export class CartController {
   @ApiBody({ type: AddItemToCartDto, description: 'Data for adding an item to the cart' })
   @ApiResponse({ status: 201, description: 'The item has been successfully added to the cart.' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async addItemToCart( @Body('data') addItemToCartDto: AddItemToCartDto) {
-    return this.cartService.addItemToCart(addItemToCartDto);
+  async addItemToCart(
+    @Body('data') addItemToCartDto: AddItemToCartDto,
+    @CurrentUser('sub') requestingUserId: string,
+  ) {
+    return this.cartService.addItemToCart(addItemToCartDto, requestingUserId);
   }
 
   @Put('items/:itemId')
@@ -42,8 +49,12 @@ export class CartController {
   @ApiBody({ type: UpdateCartItemDto, description: 'Data for updating an item in the cart' })
   @ApiResponse({ status: 200, description: 'The item has been successfully updated.' })
   @ApiResponse({ status: 404, description: 'Item not found' })
-  async updateCartItem(@Param('itemId') itemId: string, @Body('data') updateCartItemDto: UpdateCartItemDto): Promise<UniversalResponseDTO> {
-    return this.cartService.updateCartItem(itemId, updateCartItemDto);
+  async updateCartItem(
+    @Param('itemId') itemId: string,
+    @Body('data') updateCartItemDto: UpdateCartItemDto,
+    @CurrentUser('sub') requestingUserId: string,
+  ): Promise<UniversalResponseDTO> {
+    return this.cartService.updateCartItem(itemId, updateCartItemDto, requestingUserId);
   }
 
   @Delete('items/:itemId')
@@ -51,8 +62,11 @@ export class CartController {
   @ApiParam({ name: 'itemId', description: 'The ID of the item to remove' })
   @ApiResponse({ status: 200, description: 'The item has been successfully removed.' })
   @ApiResponse({ status: 404, description: 'Item not found' })
-  async removeItemFromCart(@Param('itemId') itemId: string): Promise<UniversalResponseDTO> {
-    return this.cartService.removeItemFromCart(itemId);
+  async removeItemFromCart(
+    @Param('itemId') itemId: string,
+    @CurrentUser('sub') requestingUserId: string,
+  ): Promise<UniversalResponseDTO> {
+    return this.cartService.removeItemFromCart(itemId, requestingUserId);
   }
 
 }
