@@ -26,27 +26,29 @@ describe('PaymentController', () => {
     service = module.get<PaymentService>(PaymentService);
   });
 
+  const requestingUserId = 'testUser';
+
   describe('createPayment', () => {
     it('should call PaymentService.createPayment with the correct data', async () => {
       const createPaymentDto: CreatePaymentDto = { orderId : 'test', amount : 123, paymentMethod : 'test', userId : 'testUser' };
-      await controller.createPayment(createPaymentDto);
-      expect(service.createPayment).toHaveBeenCalledWith(createPaymentDto);
+      await controller.createPayment(createPaymentDto, requestingUserId);
+      expect(service.createPayment).toHaveBeenCalledWith(createPaymentDto, requestingUserId);
     });
   });
 
   describe('getPaymentDetails', () => {
     it('should call PaymentService.getPaymentDetails with the correct paymentId', async () => {
       const paymentId = 'paymentId';
-      await controller.getPaymentDetails(paymentId);
-      expect(service.getPaymentDetails).toHaveBeenCalledWith(paymentId);
+      await controller.getPaymentDetails(paymentId, requestingUserId);
+      expect(service.getPaymentDetails).toHaveBeenCalledWith(paymentId, requestingUserId);
     });
   });
 
   describe('processRefund', () => {
     it('should call PaymentService.processRefund with the correct data', async () => {
       const refundPaymentDto: RefundPaymentDto = { paymentId : 'testId' , refundAmount : 123 };
-      await controller.processRefund(refundPaymentDto);
-      expect(service.processRefund).toHaveBeenCalledWith(refundPaymentDto);
+      await controller.processRefund(refundPaymentDto, requestingUserId);
+      expect(service.processRefund).toHaveBeenCalledWith(refundPaymentDto, requestingUserId);
     });
   });
 });

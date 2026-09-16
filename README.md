@@ -1,75 +1,80 @@
-# API Security Shield  
+# API Security Shield
 
-A backend system designed to **demonstrate protection against the OWASP Top 10 API vulnerabilities**. Built for a demo e-commerce app, this project showcases best practices in **secure API development, cloud deployment, and monitoring**.  
-
----
-
-## Features  
-- **OWASP Top 10 Protection**: Hardened APIs against vulnerabilities like SQL Injection, Mass Assignment, BOLA, etc.  
-- **Strict Data Validation & Sanitization**: Enforced with **TypeScript** type safety and server-side checks.  
-- **Secure Cloud Deployment**:  
-  - **AWS VPC** architecture with public/private subnets  
-  - Security Groups & NACLs for layered access control  
-  - PostgreSQL in private subnet  
-- **Traffic Security**: Configured **Nginx reverse proxy** with SSL/TLS to enforce HTTPS and **rate limiting** to mitigate brute-force/DoS attacks.  
-- **Continuous Vulnerability Testing**: Integrated **OWASP ZAP** for scanning; identified & mitigated 15+ vulnerabilities.  
-- **Monitoring Dashboard**: Built with **Next.js** to visualize endpoint security status and metrics (demo data from ZAP & CloudWatch).  
+A NestJS/Prisma/PostgreSQL backend for a demo e-commerce API, built to demonstrate concrete mitigations for several OWASP API Top 10 risks — and to document the process of finding and closing real gaps in an already-"hardened" codebase.
 
 ---
 
-## Tech Stack  
-- **Backend**: NestJS (TypeScript), Prisma ORM, PostgreSQL  
-- **Frontend**: Next.js (dashboard)  
-- **Security**: OWASP ZAP, Nginx (SSL/TLS, rate limiting)  
-- **Cloud**: AWS (EC2, VPC, Security Groups, NACLs, CloudWatch)  
-- **Containerization**: Docker  
+## What's actually implemented (verified)
+
+- **Deny-by-default authentication** — a global `JwtAuthGuard` (`src/auth`) requires a valid bearer token on every route unless explicitly marked `@Public()`. Previously there was no guard anywhere in the app; every ownership check below existed in code but was unreachable.
+- **Broken Object Level Authorization (API1) protections** — user, cart, order, payment, and review endpoints verify the resource belongs to the authenticated caller (`requestingUserId` from the JWT, never from the request body/URL) and return `403` on mismatch. Covered by explicit regression tests: user A can never read/modify user B's cart, order, payment, or profile.
+- **Mass assignment prevention (API3)** — a global `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })` strips any field not declared on a DTO before it reaches Prisma.
+- **SQL injection prevention** — Prisma only, no raw queries anywhere in the codebase; injection is prevented structurally, not by input filtering.
+- **No token-forgery surface** — JWTs are signed exclusively with a server-managed `JWT_SECRET` configured through `JwtModule`. An earlier design let the *client* supply the signing secret per request, which meant anyone could forge a token for any user; that code path has been removed along with the `User.secretKey` column.
+- **Password storage** — bcrypt, cost factor 12.
+- **Rate limiting (API4)** — Redis-backed, with a stricter bucket on `/auth/login` (5 requests/min, 5-minute block) than the global limit (100/min).
+- **Security headers** — `helmet()` applied globally.
+- **Fail-fast config** — the app refuses to start if `JWT_SECRET` is unset or still the documented insecure default, rather than silently signing tokens with a known key.
+- **Previously-open admin endpoint closed** — `GET /gateway/_sessions` returned every active session, including raw JWTs, to anyone. It now requires authentication like everything else (closed simply by *not* exempting it from the global guard — no bespoke fix needed).
+
+All of the above is exercised by **147 unit tests across 16 suites** plus **2 end-to-end tests** run against a real PostgreSQL instance (verifying the guard actually rejects unauthenticated HTTP requests, not just mocked calls). `npm run build`, `npm run test`, and `npm run test:e2e` all pass; see `.github/workflows/ci.yml`, which runs all three on every push/PR (it previously only ran `npm run test`, which is exactly how the codebase accumulated 58 unfixed compile errors before this pass).
+
+The full Docker Compose stack (Postgres, Redis, backend, gateway) has been run and verified to reach a healthy state end-to-end, including a live smoke test of register → login → self-access (200) → cross-user access (403) → no token (401).
 
 ---
 
-## Getting Started  
+## Known gaps (not yet implemented — stated plainly, not hidden)
 
-### Prerequisites  
-- Node.js v18+  
-- Docker & Docker Compose  
-- PostgreSQL  
+- **No role-based access control.** Any authenticated user can create/update/delete products and categories, or change an order's status. There's no `role` field or admin distinction yet.
+- **No token revocation.** Logout does not invalidate the issued JWT; it remains valid until it expires. Redis is already in the stack and would be the natural place to store a revocation list.
+- **Rate limiting keys on `x-user-id`, which is a self-reported header**, not a value derived from the verified JWT — a client can supply an arbitrary value here to dodge per-user limits (the global IP-based fallback still applies).
+- **No dynamic (DAST) scanning integrated yet.** Static/structural mitigations above are verified by tests; an OWASP ZAP pass against a running instance has not yet been run, and no scan results are included in this repo. Treat the OWASP-alignment claims here as backend implementation choices, not as third-party-verified findings.
+- **`nginx.ashukconf`** exists in the repo as a reference reverse-proxy config (rate limiting zones, TLS termination, security headers) but is **not** wired into `docker-compose.yml` — the containerized stack currently exposes the NestJS apps directly.
+- **`.github/workflows/cd.yml` is not functional** — it targets a `main` branch that doesn't exist here, a path (`infoSec/grid6.0/...`) that doesn't exist in this repo, and a placeholder Docker Hub image name. It has never successfully run and is left as-is pending a real deployment target, rather than faked into looking functional.
+- **The dashboard (`full-stack/dashboard`) is a static UI mock.** Its tables render hardcoded example data — there is no API call anywhere in the frontend. It demonstrates the intended UI for a security-status dashboard, not a live integration.
+- **No cloud deployment.** There is no AWS VPC, no CloudWatch integration, and no live hosted instance associated with this repo at present.
 
-### Installation  
+---
+
+## Tech Stack
+
+- **Backend**: NestJS (TypeScript), Prisma ORM, PostgreSQL, Redis
+- **Auth**: JWT (`@nestjs/jwt`) with a global guard, bcrypt password hashing
+- **Frontend**: Next.js (static dashboard mock — see gaps above)
+- **Containerization**: Docker / Docker Compose
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Node.js v20+
+- Docker & Docker Compose
+
+### Running with Docker (recommended)
 ```bash
-# Clone repo
-git clone https://github.com/Ashu463/api-security-shield.git
-cd api-security-shield
+cd backend/api-inventory
+cp .env.example .env   # fill in JWT_SECRET at minimum — the app refuses to boot with the placeholder value
+docker compose up --build
+```
+This starts Postgres, Redis, the backend (port 9000), and the gateway (port 8080), and runs `prisma migrate deploy` automatically on backend startup.
 
-# Install backend deps
-cd backend
+### Running locally without Docker
+```bash
+cd backend/api-inventory
 npm install
-
-# Run migrations
 npx prisma migrate dev
-
-# Start backend
 npm run start:dev
 ```
 
-### Running with Docker  
+### Tests
 ```bash
-docker-compose up --build
+npm run test        # unit tests
+npm run test:e2e     # end-to-end tests (requires a reachable Postgres — see DATABASE_URL)
+npm run build        # type-check + compile
 ```
 
 ---
 
-## Security Highlights  
-- **Prevention**: SQL Injection, Broken Object Level Authorization, Sensitive Data Exposure  
-- **Cloud Hardening**: Isolated DB in private subnet, controlled ingress/egress  
-- **Defense in Depth**: Reverse proxy, HTTPS everywhere, input sanitization, rate limiting  
-
----
-
-## Future Improvements  
-- Real-time integration of ZAP scan results into the Next.js dashboard  
-- CI/CD security testing pipeline (GitHub Actions + ZAP baseline scan)  
-- Multi-user role-based access control (RBAC)  
-
----
-
-## Acknowledgements  
-Inspired by the **OWASP Top 10 API Security Risks** and real-world enterprise security practices.  
+## Acknowledgements
+Inspired by the OWASP Top 10 API Security Risks.

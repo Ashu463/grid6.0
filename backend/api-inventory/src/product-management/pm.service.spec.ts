@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PmService } from './pm.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { BadRequestException, NotFoundException, BadGatewayException } from '@nestjs/common';
-import { CreateProductDto, Product } from 'src/dto/pm.dto';
+import { BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Product } from 'src/dto/pm.dto';
 
 describe('PmService', () => {
     let service: PmService;
@@ -43,17 +43,17 @@ describe('PmService', () => {
             const result = await service.create(createProductDto);
             expect(result).toEqual({
                 success: true,
-                message: 'product created successfully',
+                message: 'Product created successfully',
                 data: newProduct,
             });
         });
 
-        // it('should throw BadRequestException if product creation fails', async () => {
-        //     const createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = { name: 'testUser', description: 'I am a test User', price: 123, imageUrl: 'funnyCat.jpg' };
-        //     jest.spyOn(prismaService.product, 'create').mockRejectedValue(new Error('Creation failed'));
+        it('should throw InternalServerErrorException if product creation fails', async () => {
+            const createProductDto: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = { name: 'testUser', description: 'I am a test User', price: 123, imageUrl: 'funnyCat.jpg' };
+            jest.spyOn(prismaService.product, 'create').mockRejectedValue(new Error('Creation failed'));
 
-        //     await expect(service.create(createProductDto)).rejects.toThrow(BadRequestException);
-        // });
+            await expect(service.create(createProductDto)).rejects.toThrow(InternalServerErrorException);
+        });
     });
 
     describe('findAllProducts', () => {
@@ -62,7 +62,7 @@ describe('PmService', () => {
             const result = await service.findAllProducts();
             expect(result).toEqual({
                 success: true,
-                message: 'all products returned successfully',
+                message: 'Products retrieved successfully',
                 data: [],
             });
         });
@@ -73,14 +73,9 @@ describe('PmService', () => {
             const result = await service.findAllProducts();
             expect(result).toEqual({
                 success: true,
-                message: 'all products returned successfully',
+                message: 'Products retrieved successfully',
                 data: products,
             });
-        });
-
-        it('should throw BadRequestException if products are not found', async () => {
-            jest.spyOn(prismaService.product, 'findMany').mockResolvedValue(null);
-            await expect(service.findAllProducts()).rejects.toThrow(BadRequestException);
         });
     });
 
@@ -89,19 +84,18 @@ describe('PmService', () => {
             await expect(service.findOne(null)).rejects.toThrow(BadRequestException);
         });
 
-        // it('should throw NotFoundException if the product is not found', async () => {
-        //     jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue(null);
-        //     await expect(service.findOne('productId')).rejects.toThrow(NotFoundException);
-        // });
+        it('should throw NotFoundException if the product is not found', async () => {
+            jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue(null);
+            await expect(service.findOne('productId')).rejects.toThrow(NotFoundException);
+        });
 
         it('should return the product details', async () => {
-            //  '{ id: string; createdAt: Date; updatedAt: Date; name: string; description: string; price: number; imageUrl: string; }
             const product = { id: 'productId', createdAt: new Date(), updatedAt: new Date(), name: 'test', description: 'test-description', price: 123, imageUrl: 'funny-cat.jpg' };
             jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue(product);
             const result = await service.findOne('productId');
             expect(result).toEqual({
                 success: true,
-                message: 'product details updated successfully',
+                message: 'Product retrieved successfully',
                 data: product,
             });
         });
@@ -112,14 +106,14 @@ describe('PmService', () => {
             await expect(service.update(null, null)).rejects.toThrow(BadRequestException);
         });
 
-        // it('should throw BadGatewayException if the product does not exist', async () => {
-        //     jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue(null);
-        //     await expect(service.update('productId', { /* update data */ })).rejects.toThrow(BadGatewayException);
-        // });
+        it('should throw NotFoundException if the product does not exist', async () => {
+            jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue(null);
+            await expect(service.update('productId', { name: 'Updated Product' })).rejects.toThrow(NotFoundException);
+        });
 
         it('should update the product and return success message', async () => {
             const product = { id: 'productId', createdAt: new Date(), updatedAt: new Date(), name: 'test', description: 'test-description', price: 123, imageUrl: 'funny-cat.jpg' };
-            const updateData = { name: 'Updated Product', ...product };
+            const updateData = { name: 'Updated Product' };
             const updatedProduct = { ...product, ...updateData, updatedAt: new Date() };
             jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue(product);
             jest.spyOn(prismaService.product, 'update').mockResolvedValue(updatedProduct);
@@ -127,18 +121,18 @@ describe('PmService', () => {
             const result = await service.update('productId', updateData);
             expect(result).toEqual({
                 success: true,
-                message: 'product details updated successfully',
+                message: 'Product updated successfully',
                 data: updatedProduct,
             });
         });
 
-        // it('should throw BadRequestException if update fails', async () => {
-        //     const updateData = { name: 'Updated Product' };
-        //     jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue({ id: 'productId', createdAt: new Date(), updatedAt: new Date(), name: 'testUser', description: 'hi test user', price: 1231, imageUrl: 'funny-cat.jpg' });
-        //     jest.spyOn(prismaService.product, 'update').mockRejectedValue(new Error('Update failed'));
+        it('should throw InternalServerErrorException if update fails', async () => {
+            const updateData = { name: 'Updated Product' };
+            jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue({ id: 'productId', createdAt: new Date(), updatedAt: new Date(), name: 'testUser', description: 'hi test user', price: 1231, imageUrl: 'funny-cat.jpg' });
+            jest.spyOn(prismaService.product, 'update').mockRejectedValue(new Error('Update failed'));
 
-        //     await expect(service.update('productId', updateData)).rejects.toThrow(BadRequestException);
-        // });
+            await expect(service.update('productId', updateData)).rejects.toThrow(InternalServerErrorException);
+        });
     });
 
     describe('remove', () => {
@@ -146,10 +140,10 @@ describe('PmService', () => {
             await expect(service.remove(null)).rejects.toThrow(BadRequestException);
         });
 
-        // it('should throw BadGatewayException if the product does not exist', async () => {
-        //     jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue(null);
-        //     await expect(service.remove('productId')).rejects.toThrow(BadGatewayException);
-        // });
+        it('should throw NotFoundException if the product does not exist', async () => {
+            jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue(null);
+            await expect(service.remove('productId')).rejects.toThrow(NotFoundException);
+        });
 
         it('should remove the product and return success message', async () => {
             jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue({ id: 'productId', createdAt: new Date(), updatedAt: new Date(), name: 'testUser', description: 'hi test user', price: 1231, imageUrl: 'funny-cat.jpg' });
@@ -158,15 +152,15 @@ describe('PmService', () => {
             const result = await service.remove('productId');
             expect(result).toEqual({
                 success: true,
-                message: 'product deleted successfully',
+                message: 'Product deleted successfully',
             });
         });
 
-        // it('should throw BadRequestException if removal fails', async () => {
-        //     jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue({ id: 'productId', createdAt: new Date(), updatedAt: new Date(), name: 'testUser', description: 'hi test user', price: 1231, imageUrl: 'funny-cat.jpg' });
-        //     jest.spyOn(prismaService.product, 'delete').mockRejectedValue(new Error('Deletion failed'));
+        it('should throw InternalServerErrorException if removal fails', async () => {
+            jest.spyOn(prismaService.product, 'findUnique').mockResolvedValue({ id: 'productId', createdAt: new Date(), updatedAt: new Date(), name: 'testUser', description: 'hi test user', price: 1231, imageUrl: 'funny-cat.jpg' });
+            jest.spyOn(prismaService.product, 'delete').mockRejectedValue(new Error('Deletion failed'));
 
-        //     await expect(service.remove('productId')).rejects.toThrow(BadRequestException);
-        // });
+            await expect(service.remove('productId')).rejects.toThrow(InternalServerErrorException);
+        });
     });
 });

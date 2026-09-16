@@ -12,9 +12,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/test_db?schema=public
+      JWT_SECRET: ci-test-secret-do-not-use-in-production
+      JWT_EXPIRES_IN: 7d
+
     services:
       postgres:
-        image: postgres:13
+        image: postgres:16-alpine
         ports:
           - 5432:5432
         env:
@@ -29,21 +34,37 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
+        cache: npm
+        cache-dependency-path: backend/api-inventory/package-lock.json
 
     - name: Install dependencies
       working-directory: backend/api-inventory
-      run: npm install
+      run: npm ci
 
     - name: Generate Prisma Client
       working-directory: backend/api-inventory
       run: npx prisma generate
 
-    - name: Run tests
+    # A build step was previously absent here — 58 compile errors shipped to
+    # master undetected because CI only ever ran `npm run test`.
+    - name: Build
+      working-directory: backend/api-inventory
+      run: npm run build
+
+    - name: Run unit tests
       working-directory: backend/api-inventory
       run: npm run test
+
+    - name: Run database migrations
+      working-directory: backend/api-inventory
+      run: npx prisma migrate deploy
+
+    - name: Run e2e tests
+      working-directory: backend/api-inventory
+      run: npm run test:e2e

@@ -8,6 +8,8 @@ describe('CartController', () => {
   let controller: CartController;
   let service: CartService;
 
+  const requestingUserId = 'test-user';
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CartController],
@@ -43,41 +45,37 @@ describe('CartController', () => {
   });
 
   describe('getCart', () => {
-    it('should call CartService.getCart with correct parameters', async () => {
-      const data : getCartDTO = {userId : 'test-user', id : 'test-id'};
-      await controller.getCart(data);
-      expect(service.getCart).toHaveBeenCalledWith(data);
+    it('should call CartService.getCart with the requesting user id', async () => {
+      const data : getCartDTO = {userId : requestingUserId, id : 'test-id'};
+      await controller.getCart(data, requestingUserId);
+      expect(service.getCart).toHaveBeenCalledWith(data, requestingUserId);
     });
   });
 
   describe('addItemToCart', () => {
-    // it('should call CartService.addItemToCart with correct parameters', async () => {
-    //   const userId = '12345'; // This should be the userId you want to pass
-    //   const addItemToCartDto: AddItemToCartDto = { productId: 'p123', quantity: 1, userId: 'testUser', id: 'testId' };
-  
-    //   // Modify the controller method to accept userId as well
-    //   await controller.addItemToCart(addItemToCartDto);
-  
-    //   // Ensure the service method is called with the correct parameters
-    //   expect(service.addItemToCart).toHaveBeenCalledWith(userId, addItemToCartDto);
-    // });
+    it('should call CartService.addItemToCart with the requesting user id', async () => {
+      const addItemToCartDto: AddItemToCartDto = { productId: 'p123', quantity: 1, userId: requestingUserId, id: 'testId' };
+
+      await controller.addItemToCart(addItemToCartDto, requestingUserId);
+
+      expect(service.addItemToCart).toHaveBeenCalledWith(addItemToCartDto, requestingUserId);
+    });
   });
-  
 
   describe('updateCartItem', () => {
-    it('should call CartService.updateCartItem with correct parameters', async () => {
+    it('should call CartService.updateCartItem with the requesting user id', async () => {
       const itemId = 'item123';
       const updateCartItemDto: UpdateCartItemDto = { quantity: 2 };
-      await controller.updateCartItem(itemId, updateCartItemDto);
-      expect(service.updateCartItem).toHaveBeenCalledWith(itemId, updateCartItemDto);
+      await controller.updateCartItem(itemId, updateCartItemDto, requestingUserId);
+      expect(service.updateCartItem).toHaveBeenCalledWith(itemId, updateCartItemDto, requestingUserId);
     });
   });
 
   describe('removeItemFromCart', () => {
-    it('should call CartService.removeItemFromCart with correct parameters', async () => {
+    it('should call CartService.removeItemFromCart with the requesting user id', async () => {
       const itemId = 'item123';
-      await controller.removeItemFromCart(itemId);
-      expect(service.removeItemFromCart).toHaveBeenCalledWith(itemId);
+      await controller.removeItemFromCart(itemId, requestingUserId);
+      expect(service.removeItemFromCart).toHaveBeenCalledWith(itemId, requestingUserId);
     });
   });
 

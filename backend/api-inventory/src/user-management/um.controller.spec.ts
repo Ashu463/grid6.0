@@ -8,6 +8,8 @@ describe('UserController', () => {
   let controller: UserController;
   let service: UserService;
 
+  const requestingUserId = 'userId';
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
@@ -32,157 +34,144 @@ describe('UserController', () => {
     service = module.get<UserService>(UserService);
   });
 
-  // it('should handle Google auth redirect', async () => {
-  //   const req = { user: { id: 'userId' } };
-  //   jest.spyOn(service, 'validateOAuthLogin').mockResolvedValue(req.user);
-
-  //   const result = await controller.googleAuthRedirect(req);
-
-  //   expect(service.validateOAuthLogin).toHaveBeenCalledWith(req);
-  //   expect(result).toEqual(req.user);
-  // });
-
   it('should register a new user', async () => {
-    const registerUserDto: RegisterUserDto = { username: 'testuser', email: 'test@example.com', password: 'password123', secretKey: 'test-secret' };
+    const registerUserDto: RegisterUserDto = { username: 'testuser', email: 'test@example.com', password: 'password123' };
     const userResponse = { ...registerUserDto, id: 'userId', createdAt: new Date(), updatedAt: new Date() };
-  
+
     jest.spyOn(service, 'registerUser').mockResolvedValue({
       success: true,
       message: 'User registered successfully',
       data: userResponse,
     });
-  
+
     const result = await controller.register(registerUserDto);
-  
+
     expect(service.registerUser).toHaveBeenCalledWith(registerUserDto);
     expect(result).toMatchObject({
       success: true,
       message: 'User registered successfully',
-      data: { ...registerUserDto, id: 'userId' }, // Matching only essential properties
+      data: { ...registerUserDto, id: 'userId' },
     });
   });
-  
 
   it('should login a user', async () => {
-    const loginUserDto: LoginUserDto = { email: 'test@example.com', password: 'password123', secretKey: 'secret' };
+    const loginUserDto: LoginUserDto = { email: 'test@example.com', password: 'password123' };
     const token = 'jwt-token';
     jest.spyOn(service, 'loginUser').mockResolvedValue({
-        success: true,  // Corrected property name
-        message: 'congrats you were verified',
-        data: token,
+      success: true,
+      message: 'Login successful',
+      data: { token },
     });
 
     const result = await controller.login(loginUserDto);
 
-    // expect(service.loginUser).toHaveBeenCalledWith(loginUserDto);
+    expect(service.loginUser).toHaveBeenCalledWith(loginUserDto);
     expect(result).toEqual({
-        success: true,  // Corrected property name
-        message: 'congrats you were verified',
-        data: token,
+      success: true,
+      message: 'Login successful',
+      data: { token },
     });
-});
+  });
 
-  it('should logout a user', async () => {
-    const loginDto: LoginUserDto = { email: 'test@example.com', password: 'password123', secretKey : 'test-key' };
+  it('should logout the authenticated user', async () => {
     jest.spyOn(service, 'logoutUser').mockResolvedValue({
       success: true,
-      message: 'User logged out successfully',
+      message: 'Logged out successfully',
     });
 
-    const result = await controller.logout(loginDto);
+    const result = await controller.logout(requestingUserId);
 
-    expect(service.logoutUser).toHaveBeenCalledWith(loginDto);
+    expect(service.logoutUser).toHaveBeenCalledWith(requestingUserId);
     expect(result).toEqual({
       success: true,
-      message: 'User logged out successfully',
+      message: 'Logged out successfully',
     });
   });
 
   it('should get user details by user ID', async () => {
-    const userId = 'userId';
-    const user = { id: userId, username: 'testuser', createdAt : new Date(), updatedAt : new Date(), email : 'test@gmail.com', password : 'password', secretKey : 'test-key' };
+    const userId = requestingUserId;
+    const user = { id: userId, username: 'testuser', createdAt: new Date(), updatedAt: new Date(), email: 'test@gmail.com' };
     jest.spyOn(service, 'getUserById').mockResolvedValue({
       success: true,
-      message: 'User details retrieved successfully',
+      message: 'User found successfully',
       data: user,
     });
 
-    const result = await controller.getUser(userId);
+    const result = await controller.getUser(userId, requestingUserId);
 
-    expect(service.getUserById).toHaveBeenCalledWith(userId);
+    expect(service.getUserById).toHaveBeenCalledWith(userId, requestingUserId);
     expect(result).toEqual({
       success: true,
-      message: 'User details retrieved successfully',
+      message: 'User found successfully',
       data: user,
     });
   });
 
-  it('should handle user not found case for get user', async () => {
+  it('should propagate NotFoundException from getUserById', async () => {
     const userId = 'nonExistentUserId';
     jest.spyOn(service, 'getUserById').mockRejectedValue(new NotFoundException('User not found'));
 
-    await expect(controller.getUser(userId)).rejects.toThrow(NotFoundException);
+    await expect(controller.getUser(userId, requestingUserId)).rejects.toThrow(NotFoundException);
   });
 
   it('should update user details by user ID', async () => {
-    const userId = 'userId';
+    const userId = requestingUserId;
     const updateUserDto: UpdateUserDto = { username: 'updateduser' };
-    const updatedUser = { id: userId, username: 'testuser', createdAt : new Date(), updatedAt : new Date(), email : 'test@gmail.com', password : 'password', secretKey : 'test-key' };
+    const updatedUser = { id: userId, username: 'updateduser', createdAt: new Date(), updatedAt: new Date(), email: 'test@gmail.com' };
     jest.spyOn(service, 'updateUser').mockResolvedValue({
       success: true,
-      message: 'User details updated successfully',
+      message: 'User updated successfully',
       data: updatedUser,
     });
 
-    const result = await controller.updateUser(userId, updateUserDto);
+    const result = await controller.updateUser(userId, updateUserDto, requestingUserId);
 
-    expect(service.updateUser).toHaveBeenCalledWith(userId, updateUserDto);
+    expect(service.updateUser).toHaveBeenCalledWith(userId, updateUserDto, requestingUserId);
     expect(result).toEqual({
       success: true,
-      message: 'User details updated successfully',
+      message: 'User updated successfully',
       data: updatedUser,
     });
   });
 
-  it('should handle update user failure', async () => {
-    const userId = 'userId';
+  it('should propagate InternalServerErrorException from updateUser', async () => {
+    const userId = requestingUserId;
     const updateUserDto: UpdateUserDto = { username: 'updateduser' };
     jest.spyOn(service, 'updateUser').mockRejectedValue(new InternalServerErrorException('Internal server error occurred'));
 
-    await expect(controller.updateUser(userId, updateUserDto)).rejects.toThrow(InternalServerErrorException);
+    await expect(controller.updateUser(userId, updateUserDto, requestingUserId)).rejects.toThrow(InternalServerErrorException);
   });
 
   it('should update user password by user ID', async () => {
-    const userId = 'userId';
-    const updatePasswordDto: updatePasswordDTO = { oldPassword: 'oldpass', newPassword: 'newpass', email: 'test@example.com', username : 'test-user' };
-    const res = {id : userId, createdAt: new Date(), updatedAt: new Date(), email : 'test@gmail.com', username : 'testuser', password : 'test-passwrod',secretKey : 'hellosceret'}
+    const userId = requestingUserId;
+    const updatePasswordDto: updatePasswordDTO = { oldPassword: 'oldpass', newPassword: 'newpass', email: 'test@example.com', username: 'test-user' };
+    const res = { id: userId, createdAt: new Date(), updatedAt: new Date(), email: 'test@gmail.com', username: 'testuser' };
     jest.spyOn(service, 'updatePassword').mockResolvedValue({
       success: true,
-      message: 'User password updated successfully',
-      data : res
+      message: 'Password updated successfully',
+      data: res,
     });
-    // data: { id: string; createdAt: Date; updatedAt: Date; email: string; username: string; password: string; secretKey: string; }; 
 
-    const result = await controller.updatePassword(userId, updatePasswordDto);
+    const result = await controller.updatePassword(userId, updatePasswordDto, requestingUserId);
 
-    expect(service.updatePassword).toHaveBeenCalledWith(userId, updatePasswordDto);
+    expect(service.updatePassword).toHaveBeenCalledWith(userId, updatePasswordDto, requestingUserId);
     expect(result).toEqual({
       success: true,
-      message: 'User password updated successfully',
-      data : res
+      message: 'Password updated successfully',
+      data: res,
     });
   });
 
   it('should delete a user by user ID', async () => {
-    const userId = 'userId';
+    const userId = requestingUserId;
     jest.spyOn(service, 'deleteUser').mockResolvedValue({
       success: true,
       message: 'User deleted successfully',
     });
 
-    const result = await controller.deleteUser(userId);
+    const result = await controller.deleteUser(userId, requestingUserId);
 
-    expect(service.deleteUser).toHaveBeenCalledWith(userId);
+    expect(service.deleteUser).toHaveBeenCalledWith(userId, requestingUserId);
     expect(result).toEqual({
       success: true,
       message: 'User deleted successfully',

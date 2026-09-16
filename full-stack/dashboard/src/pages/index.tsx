@@ -10,7 +10,10 @@ const Home: React.FC = () => {
       <Layout>
         <h1 className="text-4xl font-bold mb-4">Home Page</h1>
         <p className="text-lg">Welcome to the home page!</p>
-        <div className="container mx-auto p-4">  
+        <div className="container mx-auto mt-2 mb-4 rounded border border-yellow-400 bg-yellow-50 p-3 text-sm text-yellow-800">
+          <strong>Static mock:</strong> the table below renders hardcoded example data. It is not connected to a live API — see this app's README.
+        </div>
+        <div className="container mx-auto p-4">
         <ParentTable />
         </div>
       </Layout>

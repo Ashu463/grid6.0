@@ -15,10 +15,15 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/health (GET) is reachable without a token', () => {
     return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+      .get('/health')
+      .expect(200);
+  });
+
+  it('/auth/users/:userId (GET) requires a bearer token', () => {
+    return request(app.getHttpServer())
+      .get('/auth/users/some-id')
+      .expect(401);
   });
 });

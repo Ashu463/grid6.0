@@ -2,12 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OrderService } from './om.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto, UpdateOrderStatusDto } from 'src/dto/om.dto';
-import { BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { validateOrReject } from 'class-validator';
+import { BadRequestException, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
 
 describe('OrderService', () => {
     let service: OrderService;
     let prismaService: PrismaService;
+
+    const requestingUserId = 'userId';
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -37,20 +38,17 @@ describe('OrderService', () => {
     });
 
     describe('createOrder', () => {
-        // it('should throw BadRequestException if validation fails', async () => {
-        //     const createOrderDto: CreateOrderDto = { userId: '', items: [] };
-        //     jest.spyOn(validateOrReject, 'mockRejectedValue').mockRejectedValue(new Error('Validation failed'));
-
-        //     await expect(service.createOrder(createOrderDto)).rejects.toThrow(BadRequestException);
-        // });
-
-        it('should create an order', async () => {
-            const createOrderDto: CreateOrderDto = { userId: 'userId', items: ["item"], totalAmount: 123 };
-            const newOrder = { id: 'orderId', ...createOrderDto, status: 'Order Placed', createdAt: new Date(), updatedAt: new Date() };
+        it('should create an order bound to the requesting user', async () => {
+            const createOrderDto: CreateOrderDto = { userId: 'someoneElse', items: ["item"], totalAmount: 123 };
+            const newOrder = { id: 'orderId', userId: requestingUserId, items: createOrderDto.items, totalAmount: createOrderDto.totalAmount, status: 'Order Placed', createdAt: new Date(), updatedAt: new Date() };
             jest.spyOn(prismaService.order, 'create').mockResolvedValue(newOrder);
 
-            const result = await service.createOrder(createOrderDto);
+            const result = await service.createOrder(createOrderDto, requestingUserId);
 
+            // A01 — always bound to the verified JWT userId, never the body
+            expect(prismaService.order.create).toHaveBeenCalledWith({
+                data: expect.objectContaining({ userId: requestingUserId, totalAmount: createOrderDto.totalAmount }),
+            });
             expect(result).toEqual({
                 success: true,
                 message: 'Order created successfully',
@@ -62,29 +60,35 @@ describe('OrderService', () => {
             const createOrderDto: CreateOrderDto = { userId: 'userId', items: ["item"], totalAmount: 123 };
             jest.spyOn(prismaService.order, 'create').mockRejectedValue(new Error('Internal server error'));
 
-            await expect(service.createOrder(createOrderDto)).rejects.toThrow(InternalServerErrorException);
+            await expect(service.createOrder(createOrderDto, requestingUserId)).rejects.toThrow(InternalServerErrorException);
         });
     });
 
     describe('getOrderById', () => {
         it('should throw BadRequestException for invalid orderId', async () => {
-            await expect(service.getOrderById('')).rejects.toThrow(BadRequestException);
+            await expect(service.getOrderById('', requestingUserId)).rejects.toThrow(BadRequestException);
         });
-
-        // it('should return the order details', async () => {
-        //     // '{ id: string; createdAt: Date; updatedAt: Date; items: string[]; userId: string; totalAmount: number; status: string; }'
-        //     const order = { id: 'orderId', userId: 'userId', items: [], status: 'Order Placed', createdAt: new Date(), updatedAt: new Date(), totalAmount: 123 };
-        //     jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(order);
-
-        //     const result = await service.getOrderById('orderId');
-
-        //     expect(result).toEqual({ success: true, data: order });
-        // });
 
         it('should throw NotFoundException if order is not found', async () => {
             jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(null);
 
-            await expect(service.getOrderById('invalidOrderId')).rejects.toThrow(NotFoundException);
+            await expect(service.getOrderById('invalidOrderId', requestingUserId)).rejects.toThrow(NotFoundException);
+        });
+
+        it('should throw ForbiddenException if the order belongs to another user (BOLA)', async () => {
+            const order = { id: 'orderId', userId: 'someoneElse', items: [], status: 'Order Placed', createdAt: new Date(), updatedAt: new Date(), totalAmount: 123 };
+            jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(order);
+
+            await expect(service.getOrderById('orderId', requestingUserId)).rejects.toThrow(ForbiddenException);
+        });
+
+        it('should return the order details for the owning user', async () => {
+            const order = { id: 'orderId', userId: requestingUserId, items: [], status: 'Order Placed', createdAt: new Date(), updatedAt: new Date(), totalAmount: 123 };
+            jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(order);
+
+            const result = await service.getOrderById('orderId', requestingUserId);
+
+            expect(result).toEqual({ success: true, message: 'Order retrieved successfully', data: order });
         });
     });
 
@@ -93,61 +97,61 @@ describe('OrderService', () => {
             await expect(service.getAllOrders('')).rejects.toThrow(BadRequestException);
         });
 
-        // it('should return all orders for a user', async () => {
-        //     const orders = [{ id: 'orderId1', userId: 'userId', items: [], status: 'Order Placed', createdAt: new Date(), updatedAt: new Date(), totalAmount: 123 }];
-        //     jest.spyOn(prismaService.order, 'findMany').mockResolvedValue(orders);
+        it('should return all orders for the requesting user only', async () => {
+            const orders = [{ id: 'orderId1', userId: requestingUserId, items: [], status: 'Order Placed', createdAt: new Date(), updatedAt: new Date(), totalAmount: 123 }];
+            jest.spyOn(prismaService.order, 'findMany').mockResolvedValue(orders);
 
-        //     const result = await service.getAllOrders('userId');
+            const result = await service.getAllOrders(requestingUserId);
 
-        //     expect(result).toEqual({ success: true, data: orders });
-        // });
+            expect(prismaService.order.findMany).toHaveBeenCalledWith({ where: { userId: requestingUserId } });
+            expect(result).toEqual({ success: true, message: 'Orders retrieved successfully', data: orders });
+        });
     });
 
     describe('updateOrderStatus', () => {
-        // it('should throw BadRequestException if validation fails', async () => {
-        //     const updateOrderStatusDto: UpdateOrderStatusDto = { status: '' };
-        //     jest.spyOn(validateOrReject, 'mockRejectedValue').mockRejectedValue(new Error('Validation failed'));
-
-        //     await expect(service.updateOrderStatus('orderId', updateOrderStatusDto)).rejects.toThrow(BadRequestException);
-        // });
-
         it('should throw BadRequestException for invalid orderId', async () => {
             const updateOrderStatusDto: UpdateOrderStatusDto = { status: 'Shipped' };
 
-            await expect(service.updateOrderStatus('', updateOrderStatusDto)).rejects.toThrow(BadRequestException);
+            await expect(service.updateOrderStatus('', updateOrderStatusDto, requestingUserId)).rejects.toThrow(BadRequestException);
         });
 
         it('should throw NotFoundException if order is not found', async () => {
             const updateOrderStatusDto: UpdateOrderStatusDto = { status: 'Shipped' };
             jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(null);
 
-            await expect(service.updateOrderStatus('invalidOrderId', updateOrderStatusDto)).rejects.toThrow(NotFoundException);
+            await expect(service.updateOrderStatus('invalidOrderId', updateOrderStatusDto, requestingUserId)).rejects.toThrow(NotFoundException);
+        });
+
+        it('should throw ForbiddenException if the order belongs to another user (BOLA)', async () => {
+            const updateOrderStatusDto: UpdateOrderStatusDto = { status: 'Shipped' };
+            const order = { id: 'orderId1', createdAt: new Date(), updatedAt: new Date(), items: ["asdf"], status: 'Order Placed', userId: 'someoneElse', totalAmount: 123 };
+            jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(order);
+
+            await expect(service.updateOrderStatus('orderId1', updateOrderStatusDto, requestingUserId)).rejects.toThrow(ForbiddenException);
         });
 
         it('should update the order status', async () => {
             const updateOrderStatusDto: UpdateOrderStatusDto = { status: 'Shipped' };
-            const order = { 
-              id: 'orderId1', 
-              createdAt: new Date(), 
-              updatedAt: new Date(), 
-              items: ["asdf"], 
+            const order = {
+              id: 'orderId1',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              items: ["asdf"],
               status: 'Order Placed',
-              userId: 'userId', 
-              totalAmount: 123 
+              userId: requestingUserId,
+              totalAmount: 123
             };
-        
-            // Mock the findUnique method to return a single order object
+
             jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(order);
-            
-            // Mock the update method to return the updated order
+
             jest.spyOn(prismaService.order, 'update').mockResolvedValue({
               ...order,
               status: updateOrderStatusDto.status,
               updatedAt: new Date(),
             });
-        
-            const result = await service.updateOrderStatus('orderId1', updateOrderStatusDto);
-        
+
+            const result = await service.updateOrderStatus('orderId1', updateOrderStatusDto, requestingUserId);
+
             expect(result).toEqual({
               success: true,
               message: 'Order status updated successfully',
@@ -161,33 +165,40 @@ describe('OrderService', () => {
 
     describe('deleteOrder', () => {
         it('should throw BadRequestException for invalid orderId', async () => {
-            await expect(service.deleteOrder('')).rejects.toThrow(BadRequestException);
+            await expect(service.deleteOrder('', requestingUserId)).rejects.toThrow(BadRequestException);
         });
 
         it('should throw NotFoundException if order is not found', async () => {
             jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(null);
 
-            await expect(service.deleteOrder('invalidOrderId')).rejects.toThrow(NotFoundException);
+            await expect(service.deleteOrder('invalidOrderId', requestingUserId)).rejects.toThrow(NotFoundException);
+        });
+
+        it('should throw ForbiddenException if the order belongs to another user (BOLA)', async () => {
+            const order = { id: 'orderId1', createdAt: new Date(), updatedAt: new Date(), items: ["asdf"], status: 'Order Placed', userId: 'someoneElse', totalAmount: 123 };
+            jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(order);
+
+            await expect(service.deleteOrder('orderId1', requestingUserId)).rejects.toThrow(ForbiddenException);
         });
 
         it('should delete the order', async () => {
-            const order = { 
-                id: 'orderId1', 
-                createdAt: new Date(), 
-                updatedAt: new Date(), 
-                items: ["asdf"], 
+            const order = {
+                id: 'orderId1',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                items: ["asdf"],
                 status: 'Order Placed',
-                userId: 'userId', 
-                totalAmount: 123 
+                userId: requestingUserId,
+                totalAmount: 123
               };
             jest.spyOn(prismaService.order, 'findUnique').mockResolvedValue(order);
             jest.spyOn(prismaService.order, 'delete').mockResolvedValue(order);
 
-            const result = await service.deleteOrder('orderId');
+            const result = await service.deleteOrder('orderId1', requestingUserId);
 
             expect(result).toEqual({
                 success: true,
-                message: 'Order cancelled or deleted successfully',
+                message: 'Order cancelled successfully',
             });
         });
     });
