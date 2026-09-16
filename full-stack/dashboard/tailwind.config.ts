@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
 
+const withAlpha = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -8,10 +10,21 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      colors: {
+        ink: withAlpha("ink"),
+        surface: withAlpha("surface"),
+        raised: withAlpha("raised"),
+        line: withAlpha("line"),
+        muted: withAlpha("muted"),
+        fg: withAlpha("fg"),
+        accent: withAlpha("accent"),
+        pass: withAlpha("pass"),
+        fail: withAlpha("fail"),
+        warn: withAlpha("warn"),
+      },
+      fontFamily: {
+        sans: ['"Space Grotesk"', "system-ui", "sans-serif"],
+        mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
       },
     },
   },

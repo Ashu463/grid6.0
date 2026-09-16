@@ -9,7 +9,8 @@ import {
   @ValidatorConstraint({ async: false })
   export class DoesNotEndWithHyphenConstraint implements ValidatorConstraintInterface {
     validate(text: string, args: ValidationArguments) {
-      return !text.endsWith('-'); // Return false if the text ends with a hyphen
+      // Only strings can end with a hyphen; leave presence/type checks to @IsString.
+      return typeof text !== 'string' || !text.endsWith('-');
     }
   
     defaultMessage(args: ValidationArguments) {
