@@ -9,7 +9,7 @@ A Next.js UI sketch for a security-status dashboard — intended to eventually v
 npm install
 npm run dev
 ```
-Open http://localhost:3000.
+Open http://localhost:8000.
 
 ## What real integration would require
 - A backend endpoint serving actual scan results (e.g. parsed OWASP ZAP JSON reports)

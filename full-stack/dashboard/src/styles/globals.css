@@ -2,18 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* RGB triplets so Tailwind opacity modifiers (bg-accent/15) work */
+/* RGB triplets so Tailwind opacity modifiers (bg-yellow/15) work */
 :root {
-  --ink: 10 14 19;
-  --surface: 18 24 33;
-  --raised: 26 35 46;
-  --line: 42 53 67;
-  --muted: 124 138 153;
-  --fg: 232 238 244;
-  --accent: 45 212 191;
-  --pass: 52 211 153;
-  --fail: 251 113 133;
-  --warn: 251 191 36;
+  --black: 7 7 10;
+  --panel: 15 15 20;
+  --panel2: 21 21 28;
+  --line: 255 255 255;
+  --yellow: 255 210 0;
+  --blue: 40 116 240;
+  --green: 59 224 126;
+  --red: 255 59 71;
+  --fg: 244 244 247;
+  --grey: 133 133 143;
 }
 
 @keyframes scanmove {
@@ -24,30 +24,49 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
 }
-@keyframes streamin {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes cellin {
+  from { opacity: 0; transform: scale(0.93); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @layer base {
-  * {
-    border-color: rgb(var(--line));
-  }
   body {
-    background-color: rgb(var(--ink));
+    background-color: rgb(var(--black));
     color: rgb(var(--fg));
-    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
   }
 }
 
 @layer utilities {
+  .chamfer {
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  }
+  .chamfer-sm {
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
   .scanbar {
     animation: scanmove 2.4s linear infinite;
   }
   .live-dot {
     animation: softblink 1.3s ease-in-out infinite;
   }
-  .stream-in {
-    animation: streamin 0.35s ease-out both;
+  .cell-in {
+    animation: cellin 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  .gridbg {
+    background-image:
+      linear-gradient(rgba(255, 210, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 210, 0, 0.03) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, #000 25%, transparent 72%);
+    mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, #000 25%, transparent 72%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell-in,
+  .live-dot,
+  .scanbar {
+    animation: none;
   }
 }

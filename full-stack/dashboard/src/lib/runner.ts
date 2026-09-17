@@ -20,12 +20,20 @@ function fakeJwt(payload: object, secret?: string) {
   return `${header}.${body}.${sig}`;
 }
 
+// The backend's limiter buckets on x-user-id, falling back to IP. Without a
+// per-run key every scan shares one IP bucket (100/min) and a second run in the
+// same minute throttles the harness itself. Probes that test the limiter set
+// this header explicitly and override the default.
+let runKey = "harness";
+
 async function hit(
   base: string,
   path: string,
   init: RequestInit & { rawStatusOnly?: boolean } = {},
 ) {
-  const res = await fetch(base + path, init);
+  const headers = new Headers(init.headers as HeadersInit | undefined);
+  if (!headers.has("x-user-id")) headers.set("x-user-id", runKey);
+  const res = await fetch(base + path, { ...init, headers });
   const text = await res.text();
   let body = text;
   try {
@@ -52,20 +60,22 @@ async function setup(base: string): Promise<Ctx> {
     const username = `probe_${tag}_${stamp}`;
     const email = `${username}@probe.local`;
     const password = "Probe_pw_123";
-    const reg = await fetch(base + "/auth/register", {
+    const reg = await hit(base, "/auth/register", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ data: { username, email, password } }),
     });
-    const regJson = await reg.json().catch(() => ({}));
-    const id = regJson?.data?.id as string;
-    const log = await fetch(base + "/auth/login", {
+    let id = "";
+    try { id = JSON.parse(reg.body)?.data?.id ?? ""; } catch { /* */ }
+    // Login is on a stricter 5/min bucket, so give setup its own key.
+    const log = await hit(base, "/auth/login", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-user-id": `${runKey}-setup-${tag}` },
       body: JSON.stringify({ data: { email, password } }),
     });
-    const logJson = await log.json().catch(() => ({}));
-    return { id, token: logJson?.data?.token as string };
+    let token = "";
+    try { token = JSON.parse(log.body)?.data?.token ?? ""; } catch { /* */ }
+    return { id, token };
   };
   const a = await mk("a");
   const b = await mk("b");
@@ -170,7 +180,7 @@ const RUNNERS: Record<string, Runner> = {
     let last = 0; const codes: number[] = [];
     for (let i = 0; i < 7; i++) {
       const r = await hit(c.base, "/auth/login", {
-        method: "POST", headers: { "content-type": "application/json", "x-user-id": "burst-fixed" },
+        method: "POST", headers: { "content-type": "application/json", "x-user-id": `${runKey}-burst` },
         body: JSON.stringify({ data: { email: "nobody@probe.local", password: "wrong" } }),
       });
       last = r.status; codes.push(r.status);
@@ -184,7 +194,7 @@ const RUNNERS: Record<string, Runner> = {
     let last = 0; const codes: number[] = [];
     for (let i = 0; i < 7; i++) {
       const r = await hit(c.base, "/auth/login", {
-        method: "POST", headers: { "content-type": "application/json", "x-user-id": `rot-${i}` },
+        method: "POST", headers: { "content-type": "application/json", "x-user-id": `${runKey}-rot-${i}` },
         body: JSON.stringify({ data: { email: "nobody@probe.local", password: "wrong" } }),
       });
       last = r.status; codes.push(r.status);
@@ -255,17 +265,104 @@ const RUNNERS: Record<string, Runner> = {
       `${r.status}`,
       pass ? "Swagger not mounted (production build)." : "API schema is reachable without a token.");
   },
-  "misconf-sessions": async (c, s) => {
+  "misconf-malformed-json": async (c, s) => {
+    const path = "/auth/login";
+    const r = await hit(c.base, path, {
+      method: "POST", headers: { "content-type": "application/json" }, body: "{bad json",
+    });
+    const leaks = /at \S+:\d+|node_modules|\/home\/|\/app\/|\.ts:\d+|\.js:\d+/.test(r.body);
+    const pass = r.status === 400 && !leaks;
+    return verdict(s, pass, pass ? "clean 400" : String(r.status),
+      fmtReq("POST", path, ["content-type: application/json", "body: {bad json   # malformed"]),
+      `${r.status}\n${r.body}`,
+      pass ? "Parse error is generic — no stack trace or file path in the response." : "Response leaked internal details.");
+  },
+  "misconf-unknown-route": async (c, s) => {
+    const path = "/this-route-does-not-exist";
+    const r = await hit(c.base, path, {});
+    const isJson = r.body.trim().startsWith("{");
+    const pass = r.status === 404 && isJson;
+    return verdict(s, pass, pass ? "clean 404" : String(r.status),
+      fmtReq("GET", path),
+      `${r.status}\n${r.body}`,
+      pass ? "Unknown routes return a plain JSON 404 — no framework HTML error page." : "Unexpected response for an unknown route.");
+  },
+
+  "flow-burst-register": async (c, s) => {
+    const codes: number[] = [];
+    for (let i = 0; i < 5; i++) {
+      const u = `flow_${Date.now().toString(36)}_${i}_${Math.random().toString(36).slice(2, 6)}`;
+      const r = await hit(c.base, "/auth/register", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ data: { username: u, email: `${u}@probe.local`, password: "Probe_pw_123" } }),
+      });
+      codes.push(r.status);
+    }
+    const succeeded = codes.filter((code) => code === 201).length;
+    const pass = succeeded < 5;
+    return verdict(s, pass, `${succeeded}/5 succeeded`,
+      fmtReq("POST", "/auth/register ×5", ["5 unique accounts, back-to-back, no delay between them"]),
+      `codes: ${codes.join(" ")}`,
+      pass ? "Some registrations were slowed or blocked." : "All 5 accounts were created instantly — no CAPTCHA, email verification, or signup-specific throttle stood in the way.");
+  },
+
+  "ssrf-shipping-destination": async (c, s) => {
+    const path = "/shipping/estimate";
+    const payload = { destination: "http://169.254.169.254/latest/meta-data/iam/security-credentials/", weight: 5, dimensions: { length: 1, width: 1, height: 1 } };
+    const r = await hit(c.base, path, {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload),
+    });
+    const pass = r.status === 400;
+    return verdict(s, pass, String(r.status),
+      fmtReq("POST", path, [], payload),
+      `${r.status}\n${r.body}`,
+      pass ? "The destination field never reaches any logic — every field is rejected before the handler runs. (The DTO has no validators, so this blocks legitimate estimate requests too, not just this payload.)" : "Server accepted a request naming an internal/metadata address as the destination.");
+  },
+  "ssrf-image-url": async (c, s) => {
+    const path = "/products";
+    const payload = { name: "probe-ssrf-image", description: "x", price: 1, imageUrl: "http://169.254.169.254/latest/meta-data/iam/security-credentials/" };
+    const r = await hit(c.base, path, {
+      method: "POST", headers: { ...bearer(c.aToken), "content-type": "application/json" }, body: JSON.stringify(payload),
+    });
+    let stored = "";
+    try { stored = JSON.parse(r.body)?.data?.imageUrl ?? ""; } catch { /* */ }
+    const pass = r.status === 201 && stored === payload.imageUrl;
+    return verdict(s, pass, pass ? "stored, not fetched" : String(r.status),
+      fmtReq("POST", path, [`Authorization: Bearer <account A>`], payload),
+      `${r.status}\n${r.body}`,
+      pass ? "The URL is stored as plain text and returned unmodified — nothing on the server ever dereferences it." : "Unexpected response; couldn't confirm the field is inert.");
+  },
+
+  "inventory-sessions-list": async (c, s) => {
     const r = await hit(c.base, "/gateway/_sessions", {});
     const pass = r.status === 401;
     return verdict(s, pass, String(r.status),
       fmtReq("GET", "/gateway/_sessions", ["(no Authorization header)"]),
       `${r.status}\n${r.body}`,
-      pass ? "Admin route requires a token like everything else." : "Session list returned without a token.");
+      pass ? "Admin/debug endpoint requires a token like everything else." : "Session list returned without a token.");
+  },
+  "inventory-session-lookup": async (c, s) => {
+    const path = "/gateway/_sessions/guessed-session-id";
+    const r = await hit(c.base, path, {});
+    const pass = r.status === 401;
+    return verdict(s, pass, String(r.status),
+      fmtReq("GET", path, ["(no Authorization header)"]),
+      `${r.status}\n${r.body}`,
+      pass ? "Guessing a session id doesn't help — it still requires auth." : "Session details were returned without a token.");
+  },
+  "inventory-legacy-path": async (c, s) => {
+    const path = "/api/v1/products";
+    const r = await hit(c.base, path, {});
+    const pass = r.status === 404;
+    return verdict(s, pass, String(r.status),
+      fmtReq("GET", path),
+      `${r.status}`,
+      pass ? "No orphaned legacy-version route lingering behind the current API." : "A legacy/shadow route responded.");
   },
 };
 
 export async function runAll(base: string): Promise<ProbeResult[]> {
+  runKey = `harness-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
   const ctx = await setup(base);
   if (!ctx.aToken || !ctx.bToken) {
     throw new Error("Could not register/login two probe accounts — is the backend reachable and migrated?");
