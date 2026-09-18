@@ -64,7 +64,7 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
 
       # CORS
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000}
 
       # Google OAuth (optional)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
@@ -111,7 +111,7 @@ services:
       SESSION_TTL: ${SESSION_TTL:-86400}
 
       JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000}
     ports:
       - '8080:8080'             # ← only this port needs to be open on EC2
     networks:

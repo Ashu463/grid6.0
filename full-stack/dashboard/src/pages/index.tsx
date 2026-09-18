@@ -24,6 +24,8 @@ export default function Index() {
   const [openCat, setOpenCat] = useState<string | null>(null);
   const [openProbe, setOpenProbe] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [live, setLive] = useState(true);
+  const [recordedOn, setRecordedOn] = useState<string | null>(null);
 
   const byCategory = useMemo(() => {
     const m: Record<string, ProbeResult[]> = {};
@@ -56,6 +58,8 @@ export default function Index() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Test failed");
       fresh = json.results as ProbeResult[];
+      setLive(Boolean(json.live));
+      setRecordedOn(json.recordedOn ?? null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Test failed");
       setScanning(false);
@@ -133,10 +137,20 @@ export default function Index() {
                 </button>
                 <span className="font-mono text-[11.5px] text-grey">
                   {done
-                    ? `last run just now · ${blocked} of ${results.length} blocked`
+                    ? live
+                      ? `ran just now · ${blocked} of ${results.length} blocked`
+                      : `${blocked} of ${results.length} blocked`
                     : `${PROBES.length} attacks · 10 categories · ~4s`}
                 </span>
               </div>
+
+              {done && !live && (
+                <p className="mt-5 max-w-[68ch] border-l-2 border-yellow/60 pl-3.5 text-[13px] leading-relaxed text-grey">
+                  The backend runs on my machine, not on this host — so these are the results of a
+                  real run recorded on {recordedOn}, replayed here. Clone the repo and the same
+                  button fires the attacks live.
+                </p>
+              )}
 
               {error && (
                 <div className="chamfer-sm mt-6 max-w-[60ch] bg-red/10 px-4 py-3 font-mono text-[12px] leading-relaxed text-red ring-1 ring-red/30">
