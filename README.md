@@ -31,8 +31,7 @@ The full Docker Compose stack (Postgres, Redis, backend, gateway) has been run a
 - **No dynamic (DAST) scanning integrated yet.** Static/structural mitigations above are verified by tests; an OWASP ZAP pass against a running instance has not yet been run, and no scan results are included in this repo. Treat the OWASP-alignment claims here as backend implementation choices, not as third-party-verified findings.
 - **`nginx.ashukconf`** exists in the repo as a reference reverse-proxy config (rate limiting zones, TLS termination, security headers) but is **not** wired into `docker-compose.yml` — the containerized stack currently exposes the NestJS apps directly.
 - **`.github/workflows/cd.yml` is not functional** — it targets a `main` branch that doesn't exist here, a path (`infoSec/grid6.0/...`) that doesn't exist in this repo, and a placeholder Docker Hub image name. It has never successfully run and is left as-is pending a real deployment target, rather than faked into looking functional.
-- **The dashboard (`full-stack/dashboard`) is a static UI mock.** Its tables render hardcoded example data — there is no API call anywhere in the frontend. It demonstrates the intended UI for a security-status dashboard, not a live integration.
-- **No cloud deployment.** There is no AWS VPC, no CloudWatch integration, and no live hosted instance associated with this repo at present.
+- **No cloud deployment for the backend.** There is no AWS VPC, no CloudWatch integration, and no live hosted instance of the API at present — the dashboard's public deployment replays a recorded run against it instead (see below).
 
 ---
 
@@ -40,7 +39,7 @@ The full Docker Compose stack (Postgres, Redis, backend, gateway) has been run a
 
 - **Backend**: NestJS (TypeScript), Prisma ORM, PostgreSQL, Redis
 - **Auth**: JWT (`@nestjs/jwt`) with a global guard, bcrypt password hashing
-- **Frontend**: Next.js (static dashboard mock — see gaps above)
+- **Dashboard**: Next.js (`full-stack/`) — runs 24 live attacks against the backend, mapped to the OWASP API Top 10
 - **Containerization**: Docker / Docker Compose
 
 ---
@@ -66,6 +65,16 @@ npm install
 npx prisma migrate dev
 npm run start:dev
 ```
+
+### Running the dashboard
+```bash
+cd full-stack
+npm install
+npm run dev
+```
+Opens on `localhost:8000`. Press **Run security test** to fire the 24 attacks at the backend on
+`localhost:9000`. If the backend isn't reachable — which is the case on the public Vercel
+deployment — it falls back to a recorded run instead of erroring, and says so on the page.
 
 ### Tests
 ```bash
