@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { useMemo, useState } from "react";
 import { CATEGORIES, ENDPOINT_COUNT, PROBES, ProbeResult, Status } from "@/lib/catalog";
+import TopNav from "@/components/TopNav";
 
 const PROBE_COUNT: Record<string, number> = PROBES.reduce((acc, p) => {
   acc[p.category] = (acc[p.category] ?? 0) + 1;
@@ -97,23 +98,7 @@ export default function Index() {
         <div className="gridbg pointer-events-none fixed inset-0 z-0" />
 
         <div className="relative z-10">
-          {/* ── header ── */}
-          <header className="sticky top-0 z-20 border-b border-line/[0.09] bg-black/85 backdrop-blur-xl">
-            <div className="mx-auto flex max-w-[1040px] flex-wrap items-center justify-between gap-4 px-6 py-3">
-              <div className="flex items-center gap-2.5">
-                <svg viewBox="0 0 32 32" fill="none" className="size-[25px] shrink-0">
-                  <rect x="3" y="7" width="26" height="22" fill="#FFD200" />
-                  <path d="M11 11V8a5 5 0 0 1 10 0v3" stroke="#07070A" strokeWidth="2.2" fill="none" />
-                  <text x="16" y="25" fontFamily="IBM Plex Sans" fontSize="13" fontWeight="700" fill="#2874F0" textAnchor="middle">f</text>
-                </svg>
-                <span className="text-[15px] font-bold">Flipkart</span>
-                <span className="font-ox text-[15px] font-extrabold tracking-[0.04em] text-yellow">
-                  GRID 6.0
-                </span>
-              </div>
-              <div className="font-mono text-[11px] text-grey">API SECURITY SHIELD</div>
-            </div>
-          </header>
+          <TopNav active="backend" />
 
           <main className="mx-auto max-w-[1040px] px-6">
             {/* ── hero ── */}

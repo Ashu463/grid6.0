@@ -31,7 +31,43 @@ The full Docker Compose stack (Postgres, Redis, backend, gateway) has been run a
 - **No dynamic (DAST) scanning integrated yet.** Static/structural mitigations above are verified by tests; an OWASP ZAP pass against a running instance has not yet been run, and no scan results are included in this repo. Treat the OWASP-alignment claims here as backend implementation choices, not as third-party-verified findings.
 - **`nginx.ashukconf`** exists in the repo as a reference reverse-proxy config (rate limiting zones, TLS termination, security headers) but is **not** wired into `docker-compose.yml` — the containerized stack currently exposes the NestJS apps directly.
 - **`.github/workflows/cd.yml` is not functional** — it targets a `main` branch that doesn't exist here, a path (`infoSec/grid6.0/...`) that doesn't exist in this repo, and a placeholder Docker Hub image name. It has never successfully run and is left as-is pending a real deployment target, rather than faked into looking functional.
-- **No cloud deployment for the backend.** There is no AWS VPC, no CloudWatch integration, and no live hosted instance of the API at present — the dashboard's public deployment replays a recorded run against it instead (see below).
+- **No cloud deployment for the backend today.** There is no live hosted instance of the API at present — the dashboard's public deployment replays a recorded run against it instead (see "Running the dashboard" below). A real AWS deployment *was* built and verified for the original submission; it was decommissioned after judging. See the next section, and the **Cloud Solution** tab on the dashboard, for the evidence.
+
+---
+
+## Cloud deployment (2024 submission — decommissioned)
+
+For the original GRID 6.0 build, the API ran inside a real AWS VPC, not just Docker on a laptop.
+This was live and verified on camera during the original build recording; it was torn down after
+judging, and none of it is live today. Verified from that recording, not re-created after the fact:
+
+- **VPC & subnets** — `grid6.0-VPCv2.0`, `10.0.0.0/16`, 8 subnets split public/private across
+  multiple AZs, 4 route tables, one Internet Gateway, one NAT gateway.
+- **Network ACLs** — inbound allow-list of exactly 5 ports (22, 80, 443, 9000, 5432) from `0.0.0.0/0`,
+  with an explicit deny on everything else.
+- **EC2 instance** — `grid_API_BE`, `t2.micro`, running in the public subnet with a real Elastic IP,
+  confirmed reachable during the recording.
+- **TLS** — a real Let's Encrypt certificate via Certbot on a dynamic-DNS domain (`ashuk.ddns.net`).
+  nginx force-redirected HTTP to HTTPS and set HSTS, `X-Frame-Options`, and `X-Content-Type-Options`
+  on every response.
+- **Per-route rate limiting** — not one global limiter: separate nginx `limit_req` zones individually
+  configured on `/auth/login`, `/auth/register`, `/orders/:orderId`, `/payments`, `/payments/refund`,
+  and `/shipping/estimate`, read directly from the live config file on the box.
+- **RDS in the private subnet** — PostgreSQL with no public IP and no route from outside the VPC;
+  only the EC2 instance in the public subnet could reach it.
+- **CI/CD** — a real GitHub Actions pipeline on this repo, with genuine multi-author history (commits
+  and merged PRs from teammates, not one person), deploying to the EC2 instance on push to `master`.
+- **Real spend** — AWS Cost Explorer showed **$17.24** for the prior month, live in the recording —
+  this wasn't a free-tier-only sandbox that never left $0.
+
+**What didn't make it, stated the same way the OWASP results are — plainly:**
+- nginx was used in place of Kong, which was the original plan.
+- Prometheus and Grafana didn't fit on the EC2 instance's disk; CloudWatch logging was the fallback.
+- IP blacklisting/whitelisting was never configured.
+- A load balancer was scoped out — the added cost wasn't justified for a demo deployment.
+
+The full architecture diagram and request-path walkthrough are on the dashboard's **Cloud Solution**
+tab (`full-stack/src/pages/cloud.tsx`).
 
 ---
 
